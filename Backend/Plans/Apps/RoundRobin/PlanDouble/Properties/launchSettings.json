@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PlanDouble": {
+      "commandName": "Project",
+      "commandLineArgs": "10 6"
+    }
+  }
+}
