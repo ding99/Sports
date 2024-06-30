@@ -23,15 +23,19 @@ public partial class Planner {
 
     }
 
-    private static string DSummary(Summary s) {
+    private static string DSummary(List<Summary> players) {
         StringBuilder b = new();
-        b.AppendLine($"-- {s.Self + 1} ({s.Played})");
-        b.Append("Partners  ");
-        b.Append(string.Join(", ", s.Partners.Select((v, i) => $"{i + 1}-{v}")));
-        b.AppendLine($" ({s.Partners.Sum(x => x)})");
-        b.Append("Opponents ");
-        b.Append(string.Join(", ", s.Opponents.Select((v, i) => $"{i + 1}-{v}")));
-        b.AppendLine($" ({s.Opponents.Sum(x => x)})");
+        players.ForEach(s => {
+            b.AppendLine($"-- {s.Self + 1} ({s.Played})");
+
+            b.Append("Partners  ");
+            b.Append(string.Join(", ", s.Partners.Select((v, i) => $"{i + 1}-{v}")));
+            b.AppendLine($" ({s.Partners.Sum()})");
+
+            b.Append("Opponents ");
+            b.Append(string.Join(", ", s.Opponents.Select((v, i) => $"{i + 1}-{v}")));
+            b.AppendLine($" ({s.Opponents.Sum()})");
+        });
         return b.ToString();
     }
 

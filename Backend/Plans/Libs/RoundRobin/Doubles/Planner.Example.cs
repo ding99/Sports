@@ -18,33 +18,27 @@ public partial class Planner {
             return;
         }
 
-        var orig = DTour(rr, "Sample 10");
+        var orig = DTour(rr, $"Sample{persons}");
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine(orig);
 
-        var stat = STour(rr);
+        var players = STour(rr);
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(stat);
+        Console.WriteLine(DSummary(players));
     }
 
 
     #region statistics
 
-    private static string STour(Tour tour) {
-        var mx = MaxTour(tour);
-        StringBuilder b = new($"Max ({mx + 1})");
-        b.AppendLine();
-
-        var players = Enumerable.Range(0, mx + 1).Select(i => new Summary() {
+    private static List<Summary> STour(Tour tour) {
+        var max = MaxTour(tour);
+        return Enumerable.Range(0, max + 1).Select(i => new Summary() {
             Self = i,
             Played = PlayedTour(tour, i),
-            Partners = PartsTour(tour, i, mx + 1),
-            Opponents = OpposTour(tour, i, mx + 1)
+            Partners = PartsTour(tour, i, max + 1),
+            Opponents = OpposTour(tour, i, max + 1)
 
-        });
-        b.AppendLine(string.Join("", players.Select(p => DSummary(p))));
-
-        return b.ToString();
+        }).ToList();
     }
 
     #region played

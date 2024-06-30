@@ -11,20 +11,19 @@ public partial class Planner {
             return;
         }
 
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
         var (new10, players) = Find(persons, games);
 
         var orig = DTour(new10, "New10");
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine(orig);
 
-        StringBuilder b = new();
-        b.AppendLine(string.Join("", players.Select(p => DSummary(p))));
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(b.ToString());
+        Console.WriteLine(DSummary(players));
     }
 
 
-    public (Tour, Summary[]) Find(int MaxPern, int MaxAttd) {
+    public (Tour, List<Summary>) Find(int MaxPern, int MaxAttd) {
         var list = CreateOrder(MaxPern, MaxAttd);
         StringBuilder b = new();
 
@@ -35,7 +34,6 @@ public partial class Planner {
         var (tour, summaries) = CreateTour(MaxPern, MaxAttd, list);
         b.AppendLine($"Rounds {tour.Rounds.Count}");
 
-        Console.ForegroundColor = ConsoleColor.DarkYellow;
         Console.WriteLine(b);
         return (tour, summaries);
     }
@@ -59,7 +57,7 @@ public partial class Planner {
         return list;
     }
 
-    public (Tour, Summary[]) CreateTour(int maxPers, int maxAttd, List<int> list) {
+    public (Tour, List<Summary>) CreateTour(int maxPers, int maxAttd, List<int> list) {
         Tour tour = new();
         Round crtRd = new();
         Court crtCt = new();
@@ -68,7 +66,7 @@ public partial class Planner {
             Played = 0,
             Partners = new int[maxPers],
             Opponents = new int[maxPers]
-        }).ToArray();
+        }).ToList();
 
         int maxCt = maxPers / 4;
         Console.WriteLine($"MaxCourt {maxCt}");
@@ -96,10 +94,10 @@ public partial class Planner {
         }
 
         Console.WriteLine($"Added {b} ({b.ToString().Split(',').Length})");
-        return (tour, players.ToArray());
+        return (tour, players);
     }
 
-    private bool Parted(Summary[] players, Court ct, int p) {
+    private bool Parted(List<Summary> players, Court ct, int p) {
         return ct.Team1.Players.Count == 1 && players.First(x => x.Self == ct.Team1.Players[0]).Partners[p] > 0
             || ct.Team2.Players.Count == 1 && players.First(x => x.Self == ct.Team2.Players[0]).Partners[p] > 0;
     }
@@ -112,7 +110,7 @@ public partial class Planner {
         return ct.Team1.Players.Contains(p) || ct.Team2.Players.Contains(p);
     }
 
-    private (Tour, Summary[], Round, Court) AppendPlayer(Tour tr, Summary[] players, Round rd, Court ct, int maxCt, int p) {
+    private (Tour, List<Summary>, Round, Court) AppendPlayer(Tour tr, List<Summary> players, Round rd, Court ct, int maxCt, int p) {
         switch (CountPos(ct)) {
         case 0:
             ct.Team1.Players.Add(p);
