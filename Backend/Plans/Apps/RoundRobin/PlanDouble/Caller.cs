@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+
 using Libs.RoundRobin.Doubles;
 
 namespace Apps.RoundRobin.PlanDouble;
@@ -22,7 +23,7 @@ public class Caller {
         root.SetHandler((p, g) => new Planner().Start(p, g), players, games);
 
         var result = root.Invoke(args);
-        Console.WriteLine($"Result {result}");
+        Console.WriteLine($"Result: {result}");
     }
 
 }

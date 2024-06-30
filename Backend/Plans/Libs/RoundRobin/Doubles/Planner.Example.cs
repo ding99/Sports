@@ -1,20 +1,122 @@
-﻿namespace Libs.RoundRobin.Doubles; 
+﻿using System.Text;
+
+namespace Libs.RoundRobin.Doubles; 
 
 public partial class Planner {
 
-    public void ShowSample() {
-        var rr10 = GetNet10();
+    public static void ShowSample(int persons) {
 
-        var orig = DTour(rr10, "Net10");
+        Tour? rr;
+
+        switch (persons) {
+        case 10:
+            rr = GetSample10();
+            break;
+        default:
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"UnSupported players number {persons}!");
+            return;
+        }
+
+        var orig = DTour(rr, "Sample 10");
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine(orig);
 
-        var stat = STour(rr10);
+        var stat = STour(rr);
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine(stat);
     }
 
-    private static Tour GetNet10() {
+
+    #region statistics
+
+    private static string STour(Tour tour) {
+        var mx = MaxTour(tour);
+        StringBuilder b = new($"Max ({mx + 1})");
+        b.AppendLine();
+
+        var players = Enumerable.Range(0, mx + 1).Select(i => new Summary() {
+            Self = i,
+            Played = PlayedTour(tour, i),
+            Partners = PartsTour(tour, i, mx + 1),
+            Opponents = OpposTour(tour, i, mx + 1)
+
+        });
+        b.AppendLine(string.Join("", players.Select(p => DSummary(p))));
+
+        return b.ToString();
+    }
+
+    #region played
+    private static int PlayedTour(Tour tour, int n) {
+        return tour.Rounds.Sum(r => r.Courts.Sum(c => PlayedCourt(c, n)));
+
+        int PlayedCourt(Court court, int n) {
+            return PlayedTeam(court.Team1, n) + PlayedTeam(court.Team2, n);
+        }
+
+        int PlayedTeam(Team team, int n) {
+            return team.Players.Count(c => c == n);
+        }
+    }
+    #endregion
+
+    #region partner
+    private static int[] PartsTour(Tour tour, int s, int mx) {
+        return Enumerable.Range(0, mx).Select(i => PartTour(tour, s, i)).ToArray();
+    }
+    private static int PartTour(Tour tour, int s, int n) {
+        return tour.Rounds.Sum(r => PartRound(r, s, n));
+
+        int PartRound(Round round, int s, int n) {
+            return round.Courts.Sum(c => PartCourt(c, s, n));
+        }
+    }
+    private static int PartCourt(Court court, int s, int n) {
+        return PartTeam(court.Team1, s, n) + PartTeam(court.Team2, s, n);
+        
+        int PartTeam(Team team, int s, int n) {
+            return s != n && team.Players.Contains(s) && team.Players.Contains(n) ? 1 : 0;
+        }
+    }
+    #endregion
+
+    #region opponent
+    private static int[] OpposTour(Tour tour, int s, int mx) {
+        return Enumerable.Range(0, mx).Select(i => OppoTour(tour, s, i)).ToArray();
+
+        int OppoTour(Tour tour, int s, int n) {
+            return tour.Rounds.Sum(r => OppoRound(r, s, n));
+
+            int OppoRound(Round round, int s, int n) {
+                return round.Courts.Sum(c => OppoCourt(c, s, n));
+            }
+
+            int OppoCourt(Court court, int s, int n) {
+                return s != n && (court.Team1.Players.Contains(s) && court.Team2.Players.Contains(n) || court.Team1.Players.Contains(n) && court.Team2.Players.Contains(s)) ? 1 : 0;
+            }
+
+        }
+    }
+    #endregion
+
+    #endregion
+
+    #region max
+
+    private static int MaxTour(Tour tour) {
+        return tour.Rounds.Max(r => r.Courts.Max(c => MaxCourt(c)));
+
+        static int MaxCourt(Court court) {
+            return Math.Max(court.Team1.Players.Max(), court.Team2.Players.Max());
+        }
+    }
+
+    #endregion
+
+    #region data
+
+    private static Tour GetSample10() {
         return new Tour(new([
             new(new([
                 new(new([0, 6]), new([5, 8])),
@@ -49,5 +151,7 @@ public partial class Planner {
             ]))
         ]));
     }
+
+    #endregion
 
 }
