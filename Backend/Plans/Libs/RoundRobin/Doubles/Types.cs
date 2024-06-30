@@ -1,4 +1,4 @@
-﻿namespace RoundRobin.Doubles;
+﻿namespace Libs.RoundRobin.Doubles;
 
 public class Summary
 {
