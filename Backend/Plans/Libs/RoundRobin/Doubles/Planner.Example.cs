@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Libs.RoundRobin.Doubles; 
+﻿namespace Libs.RoundRobin.Doubles; 
 
 public partial class Planner {
 
@@ -18,13 +16,11 @@ public partial class Planner {
             return;
         }
 
-        var orig = DTour(rr, $"Sample{persons}");
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine(orig);
+        Console.WriteLine(DTour(rr, $"Sample{persons}"));
 
-        var players = STour(rr);
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(DSummary(players));
+        Console.WriteLine(DSummary(STour(rr)));
     }
 
 
@@ -37,7 +33,6 @@ public partial class Planner {
             Played = PlayedTour(tour, i),
             Partners = PartsTour(tour, i, max + 1),
             Opponents = OpposTour(tour, i, max + 1)
-
         }).ToList();
     }
 

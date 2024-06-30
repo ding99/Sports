@@ -11,77 +11,87 @@ public partial class Planner {
             return;
         }
 
-        Console.ForegroundColor = ConsoleColor.DarkYellow;
-        var (new10, players) = Find(persons, games);
+        var (tour, players, log) = Find(persons, games);
+        Console.ResetColor();
+        Console.WriteLine(log);
 
-        var orig = DTour(new10, "New10");
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine(orig);
+        Console.WriteLine(DTour(tour, $"New_{persons}-{games}"));
 
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine(DSummary(players));
     }
 
 
-    public (Tour, List<Summary>) Find(int MaxPern, int MaxAttd) {
-        var list = CreateOrder(MaxPern, MaxAttd);
+    public (Tour, List<Summary>, string) Find(int maxPlayers, int maxGames) {
+        var master = CreateMaster(maxPlayers, maxGames);
+
         StringBuilder b = new();
 
-        b.AppendLine($"List:  {string.Join(", ", list)}");
-        var g = list.GroupBy(x => x).ToList();
-        b.AppendLine($"Group: {string.Join(", ", g.Select(x => x.Count()))}");
+        b.AppendLine($"List  {string.Join(", ", master)} ({master.Count})");
 
-        var (tour, summaries) = CreateTour(MaxPern, MaxAttd, list);
+        var (tour, summaries, dsp) = CreateTour(maxPlayers, maxGames, master);
+        b.Append(dsp);
         b.AppendLine($"Rounds {tour.Rounds.Count}");
 
-        Console.WriteLine(b);
-        return (tour, summaries);
+        return (tour, summaries, b.ToString());
     }
 
     #region create tour
 
-    public List<int> CreateOrder(int maxPlayers, int maxAttd) {
+    #region master
+
+    public static List<int> CreateMaster(int maxPlayers, int maxGames) {
         List<int> list = [];
-        int a;
         Random rd = new();
-        int maxPosition = maxPlayers * maxAttd;
+        int a, maxPosition = maxPlayers * maxGames;
 
         while (list.Count < maxPosition) {
             a = rd.Next(maxPlayers);
-            if (list.Count(x => x == a) < maxAttd) {
+            if (list.Count(x => x == a) < maxGames) {
                 list.Add(a);
             }
         }
 
-        Console.WriteLine($"Group size {list.Count}");
         return list;
     }
 
-    public (Tour, List<Summary>) CreateTour(int maxPers, int maxAttd, List<int> list) {
+    #endregion
+
+    #region loop
+
+    public (Tour, List<Summary>, string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
         Tour tour = new();
-        Round crtRd = new();
-        Court crtCt = new();
-        var players = Enumerable.Range(0, maxPers).Select(i => new Summary() {
+        Round round = new();
+        Court court = new();
+        var players = Enumerable.Range(0, maxPlayers).Select(i => new Summary() {
             Self = i,
             Played = 0,
-            Partners = new int[maxPers],
-            Opponents = new int[maxPers]
+            Partners = new int[maxPlayers],
+            Opponents = new int[maxPlayers]
         }).ToList();
 
-        int maxCt = maxPers / 4;
-        Console.WriteLine($"MaxCourt {maxCt}");
-        StringBuilder b = new();
+        int maxCt = maxPlayers / 4;
+        StringBuilder b = new("Added");
 
-        int i = 0, count;
+        int count, crt;
         while ((count = list.Count) > 0) {
-            for (i = 0; i < list.Count; i++) {
-                if (!InRound(crtRd, list[i]) && !InCourt(crtCt, list[i]) && !Parted(players, crtCt, list[i])) {
-                    (tour, players, crtRd, crtCt) = AppendPlayer(tour, players, crtRd, crtCt, maxCt, list[i]);
-                    players.First(x => x.Self == list[i]).Played++;
-                    b.Append($" {list[i]},");
-                    list.RemoveAt(i);
-                    break;
-                }
+            var unset = list
+                .Select((d, i) => new { Idx = i, Pos = d })
+                .Where(x => !InRound(round, x.Pos) && !InCourt(court, x.Pos) && !Parted(players, court, x.Pos));
+
+            //TODO parted < maxPart
+
+            players.GroupBy(x => x.Played);
+            var small = players.Where(p => unset.Any(s => s.Pos == p.Self)).Min(p => p.Played);
+            var smaller = players.First(p => p.Played == small).Self;
+
+            var fst = unset.First(s => s.Pos == smaller);
+            if (fst != null) {
+                (tour, players, round, court) = AppendPlayer(tour, players, round, court, maxCt, fst.Pos);
+                players.First(x => x.Self == fst.Pos).Played++;
+                b.Append($" {fst.Pos},");
+                list.RemoveAt(fst.Idx);
             }
 
             if (list.Count == count) {
@@ -89,12 +99,13 @@ public partial class Planner {
             }
         }
 
-        if (CountPos(crtCt) > 0) {
-            tour = AppendCt(tour, crtRd, crtCt, maxCt);
+        if (CountPos(court) > 0 || round.Courts.Count > 0) {
+            tour = AppendCt(tour, round, court, maxCt);
         }
 
-        Console.WriteLine($"Added {b} ({b.ToString().Split(',').Length})");
-        return (tour, players);
+        b.AppendLine($" ({(b.ToString().Split(',').Length - 1)})");
+        b.AppendLine($"Courts {maxCt}");
+        return (tour, players, b.ToString());
     }
 
     private bool Parted(List<Summary> players, Court ct, int p) {
@@ -184,10 +195,16 @@ public partial class Planner {
         return tour;
     }
 
+    private int CountPos(Court court) {
+        return court.Team1.Players.Count + court.Team2.Players.Count;
+    }
+
+    #endregion
+
+    #region util
+
     private Round CloneRd(Round rd) {
-        return new Round {
-            Courts = new(rd.Courts)
-        };
+        return new Round { Courts = new(rd.Courts) };
     }
 
     private Court CloneCt(Court ct) {
@@ -197,9 +214,7 @@ public partial class Planner {
         };
     }
 
-    private int CountPos(Court court) {
-        return court.Team1.Players.Count + court.Team2.Players.Count;
-    }
+    #endregion
 
     #endregion
 
