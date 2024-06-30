@@ -5,6 +5,12 @@ namespace Libs.RoundRobin.Doubles;
 public partial class Planner {
 
     public void Create(int persons, int games) {
+        if ((persons * games) % 4 != 0) {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"persons*games should be multiple of 4!");
+            return;
+        }
+
         var (new10, players) = Find(persons, games);
 
         var orig = DTour(new10, "New10");
