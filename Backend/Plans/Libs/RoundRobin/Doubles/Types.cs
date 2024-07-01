@@ -50,3 +50,8 @@ public class Team {
         Players = players;
     }
 }
+
+public class Order(int idx, int ply) {
+    public int Idx { get; set; } = idx;
+    public int Ply { get; set; } = ply;
+}

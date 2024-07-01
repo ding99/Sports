@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 
 namespace Libs.RoundRobin.Doubles; 
 
@@ -77,20 +78,19 @@ public partial class Planner {
         int count, crt;
         while ((count = list.Count) > 0) {
             var unset = list
-                .Select((d, i) => new { Idx = i, Pos = d })
-                .Where(x => !InRound(round, x.Pos) && !InCourt(court, x.Pos) && !Parted(players, court, x.Pos));
+                .Select((d, i) => new Order(i, d))
+                .Where(x => !InRound(round, x.Ply) && !InCourt(court, x.Ply) && !Parted(players, court, x.Ply));
 
+            //TODO exception sometimes
             //TODO parted < maxPart
 
-            players.GroupBy(x => x.Played);
-            var small = players.Where(p => unset.Any(s => s.Pos == p.Self)).Min(p => p.Played);
-            var smaller = players.First(p => p.Played == small).Self;
+            var lestPlayeds = GetLestPlayed(unset, players);
 
-            var fst = unset.First(s => s.Pos == smaller);
+            var fst = lestPlayeds.Count() > 0 ? lestPlayeds.First() : unset.First();
             if (fst != null) {
-                (tour, players, round, court) = AppendPlayer(tour, players, round, court, maxCt, fst.Pos);
-                players.First(x => x.Self == fst.Pos).Played++;
-                b.Append($" {fst.Pos},");
+                (tour, players, round, court) = AppendPlayer(tour, players, round, court, maxCt, fst.Ply);
+                players.First(x => x.Self == fst.Ply).Played++;
+                b.Append($" {fst.Ply},");
                 list.RemoveAt(fst.Idx);
             }
 
@@ -107,6 +107,26 @@ public partial class Planner {
         b.AppendLine($"Courts {maxCt}");
         return (tour, players, b.ToString());
     }
+
+    #region chose
+    
+    public IEnumerable<Order> GetLestPlayed(IEnumerable<Order> list, List<Summary> players) {
+        if (list.Count() < 1) {
+            return list;
+        }
+        var lest = players.Where(p => list.Any(s => s.Ply == p.Self)).Min(p => p.Played);
+        var lestPlayeds = players.Where(p => list.Any(s => s.Ply == p.Self) && p.Played == lest);
+        return list.Where(i => lestPlayeds.Any(p => p.Self == i.Ply));
+    }
+
+    //TODO: correct
+    public IEnumerable<Order> GetLestParted(IEnumerable<Order> list, List<Summary> players, Court ct) {
+        var playedLess = players.Where(p => list.Any(s => s.Ply == p.Self)).Min(p => p.Played);
+        var lestPlayeds = players.Where(p => list.Any(s => s.Ply == p.Self) && p.Played == playedLess);
+        return list.Where(i => lestPlayeds.Any(p => p.Self == i.Ply));
+    }
+
+    #endregion
 
     private bool Parted(List<Summary> players, Court ct, int p) {
         return ct.Team1.Players.Count == 1 && players.First(x => x.Self == ct.Team1.Players[0]).Partners[p] > 0
