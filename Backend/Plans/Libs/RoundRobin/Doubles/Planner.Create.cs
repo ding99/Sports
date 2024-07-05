@@ -109,41 +109,15 @@ public partial class Planner {
             }
         }
 
-        Console.WriteLine($"Left [{string.Join(",", list)}], Team1 {string.Join(",", court.Team1.Players)}, Team2 {string.Join(",", court.Team2.Players)}");
-
-        if (list.Count == 1) {
-            var pos = list.First();
-            if (court.Team1.Players.Count == 1) {
-
-                court.Team1.Players.Add(pos);
-
-                var ptn = court.Team1.Players.First();
-                players[pos].Partners[ptn]++;
-                players[ptn].Partners[pos]++;
-
-            } else if (court.Team2.Players.Count == 1) {
-
-                court.Team2.Players.Add(pos);
-
-                var ptn = court.Team2.Players.First();
-                players[pos].Partners[ptn]++;
-                players[ptn].Partners[pos]++;
-
-                var opt1 = court.Team1.Players[0];
-                var opt2 = court.Team1.Players[1];
-                players[pos].Opponents[opt1]++;
-                players[pos].Opponents[opt2]++;
-                players[opt1].Opponents[pos]++;
-                players[opt2].Opponents[pos]++;
-
-            }
+        if (list.Count == 1 && (court.Team1.Players.Count == 1 || court.Team2.Players.Count == 1)) {
+            (tour, players, round, court) = AppendPlayer(tour, players, round, court, maxCt, list.First());
         }
 
         if (CountPos(court) > 0 || round.Courts.Count > 0) {
             tour = AppendCt(tour, round, court, maxCt);
         }
 
-        b.AppendLine($" ({(b.ToString().Split(',').Length - 1)})");
+        b.AppendLine($" ({b.ToString().Split(',').Length - 1})");
         b.AppendLine($"Courts {maxCt}");
         return (tour, players, b.ToString());
     }
