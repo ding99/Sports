@@ -71,9 +71,8 @@ public partial class Planner {
     #region loop
 
     public (Tour, List<Summary>, string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
-        Tour tour = new();
-        Round round = new();
-        Court court = new();
+        Overall oa = new();
+        bool changed = false;
         var players = Enumerable.Range(0, maxPlayers).Select(i => new Summary() {
             Self = i,
             Played = 0,
@@ -88,20 +87,17 @@ public partial class Planner {
         while ((count = list.Count) > 0) {
             var unset = list
                 .Select((d, i) => new Order(i, d))
-                .Where(x => !InRound(round, x.Ply) && !InCourt(court, x.Ply) && !Parted(players, court, x.Ply));
+                .Where(x => !InRound(oa.Round, x.Ply) && !InCourt(oa.Court, x.Ply) && !Parted(players, oa.Court, x.Ply));
 
             //TODO exception sometimes
             //TODO parted < maxPart
 
-            var lestPlayeds = GetLestPlayed(unset, players);
+            var choosen = GetLestPlayed(unset, players);
 
-            var fst = lestPlayeds != null && lestPlayeds?.Count() > 0 ? lestPlayeds.First() : unset?.FirstOrDefault();
+            (changed, oa, players, choosen, list) = UpdateList(oa, players, maxCt, choosen, list, b);
 
-            if (fst != null) {
-                (tour, players, round, court) = AppendPlayer(tour, players, round, court, maxCt, fst.Ply);
-                players.First(x => x.Self == fst.Ply).Played++;
-                b.Append($" {fst.Ply},");
-                list.RemoveAt(fst.Idx);
+            if (changed) {
+                //TODO
             }
 
             if (list.Count == count) {
@@ -109,17 +105,17 @@ public partial class Planner {
             }
         }
 
-        if (list.Count == 1 && (court.Team1.Players.Count == 1 || court.Team2.Players.Count == 1)) {
-            (tour, players, round, court) = AppendPlayer(tour, players, round, court, maxCt, list.First());
+        if (list.Count == 1 && (oa.Court.Team1.Players.Count == 1 || oa.Court.Team2.Players.Count == 1)) {
+            (oa, players) = AppendPlayer(oa, players, maxCt, list.First());
         }
 
-        if (CountPos(court) > 0 || round.Courts.Count > 0) {
-            tour = AppendCt(tour, round, court, maxCt);
+        if (CountPos(oa.Court) > 0 || oa.Round.Courts.Count > 0) {
+            oa.Tour = AppendCt(oa, maxCt);
         }
 
         b.AppendLine($" ({b.ToString().Split(',').Length - 1})");
         b.AppendLine($"Courts {maxCt}");
-        return (tour, players, b.ToString());
+        return (oa.Tour, players, b.ToString());
     }
 
     #region chose
@@ -155,78 +151,92 @@ public partial class Planner {
         return ct.Team1.Players.Contains(p) || ct.Team2.Players.Contains(p);
     }
 
-    private (Tour, List<Summary>, Round, Court) AppendPlayer(Tour tr, List<Summary> players, Round rd, Court ct, int maxCt, int p) {
-        switch (CountPos(ct)) {
+    private (bool, Overall, List<Summary>, IEnumerable<Order>?, List<int>) UpdateList(Overall oa, List<Summary> players, int maxCt, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
+        var result = orders?.Count() > 0;
+        var fst = orders?.FirstOrDefault();
+
+        if(result is true) {
+            (oa, players) = AppendPlayer(oa, players, maxCt, fst!.Ply);
+            players.First(x => x.Self == fst.Ply).Played++;
+            b.Append($" {fst.Ply},");
+            list.RemoveAt(fst.Idx);
+        }
+
+        return (result, oa, players, orders, list);
+    }
+
+    private (Overall, List<Summary>) AppendPlayer(Overall oa, List<Summary> players, int maxCt, int p) {
+        switch (CountPos(oa.Court)) {
         case 0:
-            ct.Team1.Players.Add(p);
+            oa.Court.Team1.Players.Add(p);
             break;
         case 1:
             var self1 = players.First(x => x.Self == p);
-            var pter1 = players.First(x => x.Self == ct.Team1.Players[0]);
-            self1.Partners[ct.Team1.Players[0]]++;
+            var pter1 = players.First(x => x.Self == oa.Court.Team1.Players[0]);
+            self1.Partners[oa.Court.Team1.Players[0]]++;
             pter1.Partners[p]++;
-            ct.Team1.Players.Add(p);
+            oa.Court.Team1.Players.Add(p);
             break;
         case 2:
-            players.First(x => x.Self == ct.Team1.Players[0]).Opponents[p]++;
-            players.First(x => x.Self == ct.Team1.Players[1]).Opponents[p]++;
+            players.First(x => x.Self == oa.Court.Team1.Players[0]).Opponents[p]++;
+            players.First(x => x.Self == oa.Court.Team1.Players[1]).Opponents[p]++;
             var self2 = players.First(x => x.Self == p);
-            self2.Opponents[ct.Team1.Players[0]]++;
-            self2.Opponents[ct.Team1.Players[1]]++;
-            ct.Team2.Players.Add(p);
+            self2.Opponents[oa.Court.Team1.Players[0]]++;
+            self2.Opponents[oa.Court.Team1.Players[1]]++;
+            oa.Court.Team2.Players.Add(p);
             break;
         case 3:
-            players.First(x => x.Self == ct.Team1.Players[0]).Opponents[p]++;
-            players.First(x => x.Self == ct.Team1.Players[1]).Opponents[p]++;
+            players.First(x => x.Self == oa.Court.Team1.Players[0]).Opponents[p]++;
+            players.First(x => x.Self == oa.Court.Team1.Players[1]).Opponents[p]++;
             var self3 = players.First(x => x.Self == p);
-            var pter3 = players.First(x => x.Self == ct.Team2.Players[0]);
-            self3.Partners[ct.Team2.Players[0]]++;
-            self3.Opponents[ct.Team1.Players[0]]++;
-            self3.Opponents[ct.Team1.Players[1]]++;
+            var pter3 = players.First(x => x.Self == oa.Court.Team2.Players[0]);
+            self3.Partners[oa.Court.Team2.Players[0]]++;
+            self3.Opponents[oa.Court.Team1.Players[0]]++;
+            self3.Opponents[oa.Court.Team1.Players[1]]++;
             pter3.Partners[p]++;
-            ct.Team2.Players.Add(p);
-            if (rd.Courts.Count == maxCt) {
-                tr.Rounds.Add(CloneRd(rd));
-                rd = new() { Courts = [CloneCt(ct)] };
+            oa.Court.Team2.Players.Add(p);
+            if (oa.Round.Courts.Count == maxCt) {
+                oa.Tour.Rounds.Add(CloneRd(oa.Round));
+                oa.Round = new() { Courts = [CloneCt(oa.Court)] };
             } else {
-                rd.Courts.Add(CloneCt(ct));
-                if (rd.Courts.Count == maxCt) {
-                    tr.Rounds.Add(CloneRd(rd));
-                    rd = new();
+                oa.Round.Courts.Add(CloneCt(oa.Court));
+                if (oa.Round.Courts.Count == maxCt) {
+                    oa.Tour.Rounds.Add(CloneRd(oa.Round));
+                    oa.Round = new();
                 }
             }
-            ct = new();
+            oa.Court = new();
             break;
         }
 
-        return (tr, players, rd, ct);
+        return (oa, players);
     }
 
-    private Tour AppendCt(Tour tr, Round rd, Court ct, int maxCt) {
-        if (CountPos(ct) == 4) {
-            if (rd.Courts.Count == maxCt) {
-                tr.Rounds.Add(CloneRd(rd));
-                rd = new() { Courts = [CloneCt(ct)] };
+    private Tour AppendCt(Overall oa, int maxCt) {
+        if (CountPos(oa.Court) == 4) {
+            if (oa.Round.Courts.Count == maxCt) {
+                oa.Tour.Rounds.Add(CloneRd(oa.Round));
+                oa.Round = new() { Courts = [CloneCt(oa.Court)] };
             } else {
-                rd.Courts.Add(CloneCt(ct));
+                oa.Round.Courts.Add(CloneCt(oa.Court));
             }
         }
 
-        if (rd.Courts.Count > 0) {
-            tr.Rounds.Add(rd);
+        if (oa.Round.Courts.Count > 0) {
+            oa.Tour.Rounds.Add(oa.Round);
         }
 
-        return tr;
+        return oa.Tour;
     }
 
-    private Tour AppendCt(Tour tour, Court court, int maxCt) {
-        var lastR = tour.Rounds.LastOrDefault();
+    private Tour AppendCourt(Overall oa, int maxCt) {
+        var lastR = oa.Tour.Rounds.LastOrDefault();
         if (lastR != null && lastR.Courts.Count < maxCt) {
-            lastR.Courts.Add(CloneCt(court));
+            lastR.Courts.Add(CloneCt(oa.Court));
         } else {
-            tour.Rounds.Add(new Round { Courts = [CloneCt(court)] });
+            oa.Tour.Rounds.Add(new Round { Courts = [CloneCt(oa.Court)] });
         }
-        return tour;
+        return oa.Tour;
     }
 
     private int CountPos(Court court) {

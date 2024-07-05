@@ -13,6 +13,18 @@ public class Summary {
 }
 
 
+public class Overall {
+    public Tour Tour { get; set; }
+    public Round Round { get; set; }
+    public Court Court { get; set; }
+
+    public Overall() {
+        Tour = new();
+        Round = new();
+        Court = new();
+    }
+}
+
 public class Tour {
     public List<Round> Rounds { get; set; }
 
