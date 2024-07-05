@@ -31,6 +31,8 @@ public partial class Planner {
 
         b.AppendLine($"List  {string.Join(", ", master)} ({master.Count})");
 
+        Console.WriteLine(b.ToString());
+
         var (tour, summaries, dsp) = CreateTour(maxPlayers, maxGames, master);
         b.Append(dsp);
         b.AppendLine($"Rounds {tour.Rounds.Count}");
@@ -43,18 +45,20 @@ public partial class Planner {
     #region master
 
     public static List<int> CreateMaster(int maxPlayers, int maxGames) {
-        List<int> list = [];
-        Random rd = new();
-        int a, maxPosition = maxPlayers * maxGames;
 
-        while (list.Count < maxPosition) {
-            a = rd.Next(maxPlayers);
-            if (list.Count(x => x == a) < maxGames) {
-                list.Add(a);
-            }
-        }
+        return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
+        //List<int> list = [];
+        //Random rd = new();
+        //int a, maxPosition = maxPlayers * maxGames;
 
-        return list;
+        //while (list.Count < maxPosition) {
+        //    a = rd.Next(maxPlayers);
+        //    if (list.Count(x => x == a) < maxGames) {
+        //        list.Add(a);
+        //    }
+        //}
+
+        //return list;
     }
 
     #endregion
@@ -75,7 +79,7 @@ public partial class Planner {
         int maxCt = maxPlayers / 4;
         StringBuilder b = new("Added");
 
-        int count, crt;
+        int count;
         while ((count = list.Count) > 0) {
             var unset = list
                 .Select((d, i) => new Order(i, d))
@@ -86,7 +90,8 @@ public partial class Planner {
 
             var lestPlayeds = GetLestPlayed(unset, players);
 
-            var fst = lestPlayeds.Count() > 0 ? lestPlayeds.First() : unset.First();
+            var fst = lestPlayeds != null && lestPlayeds?.Count() > 0 ? lestPlayeds.First() : unset?.FirstOrDefault();
+
             if (fst != null) {
                 (tour, players, round, court) = AppendPlayer(tour, players, round, court, maxCt, fst.Ply);
                 players.First(x => x.Self == fst.Ply).Played++;
@@ -96,6 +101,36 @@ public partial class Planner {
 
             if (list.Count == count) {
                 break;
+            }
+        }
+
+        Console.WriteLine($"Left [{string.Join(",", list)}], Team1 {string.Join(",", court.Team1.Players)}, Team2 {string.Join(",", court.Team2.Players)}");
+
+        if (list.Count == 1) {
+            var pos = list.First();
+            if (court.Team1.Players.Count == 1) {
+
+                court.Team1.Players.Add(pos);
+
+                var ptn = court.Team1.Players.First();
+                players[pos].Partners[ptn]++;
+                players[ptn].Partners[pos]++;
+
+            } else if (court.Team2.Players.Count == 1) {
+
+                court.Team2.Players.Add(pos);
+
+                var ptn = court.Team2.Players.First();
+                players[pos].Partners[ptn]++;
+                players[ptn].Partners[pos]++;
+
+                var opt1 = court.Team1.Players[0];
+                var opt2 = court.Team1.Players[1];
+                players[pos].Opponents[opt1]++;
+                players[pos].Opponents[opt2]++;
+                players[opt1].Opponents[pos]++;
+                players[opt2].Opponents[pos]++;
+
             }
         }
 
