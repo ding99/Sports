@@ -207,18 +207,6 @@ public partial class Planner {
 
     #endregion
 
-    #region util
-
-
-    private Court CloneCt(Court ct) {
-        return new Court {
-            Team1 = new() { Players = new(ct.Team1.Players) },
-            Team2 = new() { Players = new(ct.Team2.Players) }
-        };
-    }
-
-    #endregion
-
     #endregion
 
 }
