@@ -73,16 +73,16 @@ public partial class Planner {
     #region tour
 
     public (Tour, List<Player>, string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
-        Overall oa = new();
-        bool changed = false;
+        Overall oa = new(maxPlayers / 4);
         var players = Enumerable.Range(0, maxPlayers).Select(i => new Player() {
             Self = i,
             Played = 0,
             Partners = new int[maxPlayers],
             Opponents = new int[maxPlayers]
         }).ToList();
+        bool changed = false;
+        int count;
 
-        int maxCt = maxPlayers / 4, count;
         StringBuilder b = new("Added");
 
         while ((count = list.Count) > 0) {
@@ -95,7 +95,7 @@ public partial class Planner {
 
             var choosen = GetMinPlayed(unset, players);
 
-            (changed, oa, players, choosen, list) = UpdateList(oa, players, maxCt, choosen, list, b);
+            changed = UpdateList(oa, players, choosen, list, b);
 
             if (changed) {
                 //TODO
@@ -107,15 +107,15 @@ public partial class Planner {
         }
 
         if (list.Count == 1 && (oa.Court.Team1.Players.Count == 1 || oa.Court.Team2.Players.Count == 1)) {
-            (oa, players) = AppendPlayer(oa, players, maxCt, list.First());
+            AddPlayer(oa, players, list.First());
         }
 
         if (oa.Court.CountPlayers() > 0 || oa.Round.Courts.Count > 0) {
-            oa.CheckCourt(maxCt);
+            oa.CheckCourt();
         }
 
         b.AppendLine($" ({b.ToString().Split(',').Length - 1})");
-        b.AppendLine($"Courts {maxCt}");
+        b.AppendLine($"Courts {oa.MaxCt}");
         return (oa.Tour, players, b.ToString());
     }
 
@@ -144,21 +144,21 @@ public partial class Planner {
             || ct.Team2.Players.Count == 1 && players.First(x => x.Self == ct.Team2.Players[0]).Partners[p] > 0;
     }
 
-    private (bool, Overall, List<Player>, IEnumerable<Order>?, List<int>) UpdateList(Overall oa, List<Player> players, int maxCt, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
+    private bool UpdateList(Overall oa, List<Player> players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
         var fst = orders?.FirstOrDefault();
 
         if(result is true) {
-            (oa, players) = AppendPlayer(oa, players, maxCt, fst!.Ply);
+            AddPlayer(oa, players, fst!.Ply);
             players.First(x => x.Self == fst.Ply).Played++;
             b.Append($" {fst.Ply},");
             list.RemoveAt(fst.Idx);
         }
 
-        return (result, oa, players, orders, list);
+        return result;
     }
 
-    private (Overall, List<Player>) AppendPlayer(Overall oa, List<Player> players, int maxCt, int p) {
+    private void AddPlayer(Overall oa, List<Player> players, int p) {
         switch (oa.Court.CountPlayers()) {
         case 0:
             oa.Court.Team1.Players.Add(p);
@@ -188,12 +188,12 @@ public partial class Planner {
             self3.Opponents[oa.Court.Team1.Players[1]]++;
             pter3.Partners[p]++;
             oa.Court.Team2.Players.Add(p);
-            if (oa.Round.Courts.Count == maxCt) {
+            if (oa.Round.Courts.Count == oa.MaxCt) {
                 oa.Tour.Rounds.Add(oa.Round.Clone());
                 oa.Round = new() { Courts = [oa.Court.Clone()] };
             } else {
                 oa.Round.Courts.Add(oa.Court.Clone());
-                if (oa.Round.Courts.Count == maxCt) {
+                if (oa.Round.Courts.Count == oa.MaxCt) {
                     oa.Tour.Rounds.Add(oa.Round.Clone());
                     oa.Round = new();
                 }
@@ -201,8 +201,6 @@ public partial class Planner {
             oa.Court = new();
             break;
         }
-
-        return (oa, players);
     }
 
     #endregion
