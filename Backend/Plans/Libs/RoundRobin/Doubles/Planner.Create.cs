@@ -52,18 +52,20 @@ public partial class Planner {
         // 6 round
         return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
 
-        //List<int> list = [];
-        //Random rd = new();
-        //int a, maxPosition = maxPlayers * maxGames;
+        #region random
+        List<int> list = [];
+        Random rd = new();
+        int a, maxPosition = maxPlayers * maxGames;
 
-        //while (list.Count < maxPosition) {
-        //    a = rd.Next(maxPlayers);
-        //    if (list.Count(x => x == a) < maxGames) {
-        //        list.Add(a);
-        //    }
-        //}
+        while (list.Count < maxPosition) {
+            a = rd.Next(maxPlayers);
+            if (list.Count(x => x == a) < maxGames) {
+                list.Add(a);
+            }
+        }
 
-        //return list;
+        return list;
+        #endregion
     }
 
     #endregion
@@ -141,14 +143,6 @@ public partial class Planner {
         return ct.Team1.Players.Count == 1 && players.First(x => x.Self == ct.Team1.Players[0]).Partners[p] > 0
             || ct.Team2.Players.Count == 1 && players.First(x => x.Self == ct.Team2.Players[0]).Partners[p] > 0;
     }
-
-    //private bool InRound(Round rd, int p) {
-    //    return rd.Courts.Any(x => InCourt(x, p));
-    //}
-
-    //private bool InCourt(Court ct, int p) {
-    //    return ct.Team1.Players.Contains(p) || ct.Team2.Players.Contains(p);
-    //}
 
     private (bool, Overall, List<Player>, IEnumerable<Order>?, List<int>) UpdateList(Overall oa, List<Player> players, int maxCt, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
