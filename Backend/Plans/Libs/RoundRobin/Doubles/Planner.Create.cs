@@ -63,11 +63,14 @@ public partial class Planner {
             //TODO exception sometimes
             //TODO parted < maxPart
 
-            var choosen = GetMinPlayed(unset, players);
+            // min parted
 
+            // min played
+            var choosen = GetMinPlayed(unset, players);
             if (UpdateList(oa, players, choosen, list, b)) {
                 unset = choosen;
             }
+
 
             if (list.Count == count) {
                 break;
