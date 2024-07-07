@@ -1,12 +1,12 @@
 ﻿namespace Libs.RoundRobin.Doubles;
 
-public class Summary {
+public class Player {
     public int Self { get; set; }
     public int Played { get; set; }
     public int[] Partners { get; set; }
     public int[] Opponents { get; set; }
 
-    public Summary() {
+    public Player() {
         Partners = [];
         Opponents = [];
     }
@@ -41,6 +41,10 @@ public class Round {
     public Round(List<Court> courts) {
         Courts = courts;
     }
+
+    public bool Contain(int player) {
+        return Courts.Any(c => c.Contain(player));
+    }
 }
 
 public class Court {
@@ -52,6 +56,10 @@ public class Court {
         Team1 = team1;
         Team2 = team2;
     }
+
+    public bool Contain(int player) {
+        return Team1.Players.Contains(player) || Team2.Players.Contains(player);
+    }
 }
 
 public class Team {
@@ -60,6 +68,10 @@ public class Team {
     public Team() { Players = []; }
     public Team(List<int> players) {
         Players = players;
+    }
+
+    public bool Contain(int player) {
+        return Players.Contains(player);
     }
 }
 

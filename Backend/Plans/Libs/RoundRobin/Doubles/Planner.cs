@@ -7,7 +7,7 @@ public partial class Planner {
         Console.WriteLine();
 
         ShowSample(persons);
-        Create(persons, games);
+        CreateDbl(persons, games);
 
         Console.ResetColor();
     }

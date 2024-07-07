@@ -5,7 +5,7 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public void Create(int persons, int games) {
+    public void CreateDbl(int persons, int games) {
         if ((persons * games) % 4 != 0) {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"persons*games should be multiple of 4!");
@@ -20,24 +20,24 @@ public partial class Planner {
         Console.WriteLine(DTour(tour, $"New_{persons}-{games}"));
 
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(DSummary(players));
+        Console.WriteLine(DPlayers(players));
     }
 
 
-    public (Tour, List<Summary>, string) Find(int maxPlayers, int maxGames) {
+    public (Tour, List<Player>, string) Find(int maxPlayers, int maxGames) {
         var master = CreateMaster(maxPlayers, maxGames);
 
         StringBuilder b = new();
 
-        b.AppendLine($"List  {string.Join(", ", master)} ({master.Count})");
+        b.AppendLine($"List ({master.Count})  {string.Join(", ", master)}");
 
         Console.WriteLine(b.ToString());
 
-        var (tour, summaries, dsp) = CreateTour(maxPlayers, maxGames, master);
+        var (tour, players, dsp) = CreateTour(maxPlayers, maxGames, master);
         b.Append(dsp);
         b.AppendLine($"Rounds {tour.Rounds.Count}");
 
-        return (tour, summaries, b.ToString());
+        return (tour, players, b.ToString());
     }
 
     #region create tour
@@ -68,26 +68,25 @@ public partial class Planner {
 
     #endregion
 
-    #region loop
+    #region tour
 
-    public (Tour, List<Summary>, string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
+    public (Tour, List<Player>, string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
         Overall oa = new();
         bool changed = false;
-        var players = Enumerable.Range(0, maxPlayers).Select(i => new Summary() {
+        var players = Enumerable.Range(0, maxPlayers).Select(i => new Player() {
             Self = i,
             Played = 0,
             Partners = new int[maxPlayers],
             Opponents = new int[maxPlayers]
         }).ToList();
 
-        int maxCt = maxPlayers / 4;
+        int maxCt = maxPlayers / 4, count;
         StringBuilder b = new("Added");
 
-        int count;
         while ((count = list.Count) > 0) {
             var unset = list
                 .Select((d, i) => new Order(i, d))
-                .Where(x => !InRound(oa.Round, x.Ply) && !InCourt(oa.Court, x.Ply) && !Parted(players, oa.Court, x.Ply));
+                .Where(x => !oa.Round.Contain(x.Ply) && !oa.Court.Contain(x.Ply) && !Parted(players, oa.Court, x.Ply));
 
             //TODO exception sometimes
             //TODO parted < maxPart
@@ -120,7 +119,7 @@ public partial class Planner {
 
     #region chose
     
-    public IEnumerable<Order> GetLestPlayed(IEnumerable<Order> list, List<Summary> players) {
+    public IEnumerable<Order> GetLestPlayed(IEnumerable<Order> list, List<Player> players) {
         if (list.Count() < 1) {
             return list;
         }
@@ -130,7 +129,7 @@ public partial class Planner {
     }
 
     //TODO: correct
-    public IEnumerable<Order> GetLestParted(IEnumerable<Order> list, List<Summary> players, Court ct) {
+    public IEnumerable<Order> GetLestParted(IEnumerable<Order> list, List<Player> players, Court ct) {
         var playedLess = players.Where(p => list.Any(s => s.Ply == p.Self)).Min(p => p.Played);
         var lestPlayeds = players.Where(p => list.Any(s => s.Ply == p.Self) && p.Played == playedLess);
         return list.Where(i => lestPlayeds.Any(p => p.Self == i.Ply));
@@ -138,20 +137,20 @@ public partial class Planner {
 
     #endregion
 
-    private bool Parted(List<Summary> players, Court ct, int p) {
+    private bool Parted(List<Player> players, Court ct, int p) {
         return ct.Team1.Players.Count == 1 && players.First(x => x.Self == ct.Team1.Players[0]).Partners[p] > 0
             || ct.Team2.Players.Count == 1 && players.First(x => x.Self == ct.Team2.Players[0]).Partners[p] > 0;
     }
 
-    private bool InRound(Round rd, int p) {
-        return rd.Courts.Any(x => InCourt(x, p));
-    }
+    //private bool InRound(Round rd, int p) {
+    //    return rd.Courts.Any(x => InCourt(x, p));
+    //}
 
-    private bool InCourt(Court ct, int p) {
-        return ct.Team1.Players.Contains(p) || ct.Team2.Players.Contains(p);
-    }
+    //private bool InCourt(Court ct, int p) {
+    //    return ct.Team1.Players.Contains(p) || ct.Team2.Players.Contains(p);
+    //}
 
-    private (bool, Overall, List<Summary>, IEnumerable<Order>?, List<int>) UpdateList(Overall oa, List<Summary> players, int maxCt, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
+    private (bool, Overall, List<Player>, IEnumerable<Order>?, List<int>) UpdateList(Overall oa, List<Player> players, int maxCt, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
         var fst = orders?.FirstOrDefault();
 
@@ -165,7 +164,7 @@ public partial class Planner {
         return (result, oa, players, orders, list);
     }
 
-    private (Overall, List<Summary>) AppendPlayer(Overall oa, List<Summary> players, int maxCt, int p) {
+    private (Overall, List<Player>) AppendPlayer(Overall oa, List<Player> players, int maxCt, int p) {
         switch (CountPos(oa.Court)) {
         case 0:
             oa.Court.Team1.Players.Add(p);
