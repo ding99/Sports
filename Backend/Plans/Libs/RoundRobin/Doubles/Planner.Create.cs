@@ -47,7 +47,7 @@ public partial class Planner {
     public static List<int> CreateMaster(int maxPlayers, int maxGames) {
 
         //last one
-        //return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
+        return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
 
         // 6 round
         return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
@@ -93,7 +93,7 @@ public partial class Planner {
             //TODO exception sometimes
             //TODO parted < maxPart
 
-            var choosen = GetLestPlayed(unset, players);
+            var choosen = GetMinPlayed(unset, players);
 
             (changed, oa, players, choosen, list) = UpdateList(oa, players, maxCt, choosen, list, b);
 
@@ -110,8 +110,8 @@ public partial class Planner {
             (oa, players) = AppendPlayer(oa, players, maxCt, list.First());
         }
 
-        if (CountPos(oa.Court) > 0 || oa.Round.Courts.Count > 0) {
-            oa.Tour = AppendCt(oa, maxCt);
+        if (oa.Court.CountPlayers() > 0 || oa.Round.Courts.Count > 0) {
+            oa.CheckCourt(maxCt);
         }
 
         b.AppendLine($" ({b.ToString().Split(',').Length - 1})");
@@ -121,13 +121,13 @@ public partial class Planner {
 
     #region chose
     
-    public IEnumerable<Order> GetLestPlayed(IEnumerable<Order> list, List<Player> players) {
-        if (list.Count() < 1) {
+    public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, List<Player> players) {
+        if (!list.Any()) {
             return list;
         }
-        var lest = players.Where(p => list.Any(s => s.Ply == p.Self)).Min(p => p.Played);
-        var lestPlayeds = players.Where(p => list.Any(s => s.Ply == p.Self) && p.Played == lest);
-        return list.Where(i => lestPlayeds.Any(p => p.Self == i.Ply));
+        var min = players.Where(p => list.Any(s => s.Ply == p.Self)).Min(p => p.Played);
+        var minPlayeds = players.Where(p => list.Any(s => s.Ply == p.Self) && p.Played == min);
+        return list.Where(i => minPlayeds.Any(p => p.Self == i.Ply));
     }
 
     //TODO: correct
@@ -159,7 +159,7 @@ public partial class Planner {
     }
 
     private (Overall, List<Player>) AppendPlayer(Overall oa, List<Player> players, int maxCt, int p) {
-        switch (CountPos(oa.Court)) {
+        switch (oa.Court.CountPlayers()) {
         case 0:
             oa.Court.Team1.Players.Add(p);
             break;
@@ -189,12 +189,12 @@ public partial class Planner {
             pter3.Partners[p]++;
             oa.Court.Team2.Players.Add(p);
             if (oa.Round.Courts.Count == maxCt) {
-                oa.Tour.Rounds.Add(CloneRd(oa.Round));
-                oa.Round = new() { Courts = [CloneCt(oa.Court)] };
+                oa.Tour.Rounds.Add(oa.Round.Clone());
+                oa.Round = new() { Courts = [oa.Court.Clone()] };
             } else {
-                oa.Round.Courts.Add(CloneCt(oa.Court));
+                oa.Round.Courts.Add(oa.Court.Clone());
                 if (oa.Round.Courts.Count == maxCt) {
-                    oa.Tour.Rounds.Add(CloneRd(oa.Round));
+                    oa.Tour.Rounds.Add(oa.Round.Clone());
                     oa.Round = new();
                 }
             }
@@ -205,44 +205,10 @@ public partial class Planner {
         return (oa, players);
     }
 
-    private Tour AppendCt(Overall oa, int maxCt) {
-        if (CountPos(oa.Court) == 4) {
-            if (oa.Round.Courts.Count == maxCt) {
-                oa.Tour.Rounds.Add(CloneRd(oa.Round));
-                oa.Round = new() { Courts = [CloneCt(oa.Court)] };
-            } else {
-                oa.Round.Courts.Add(CloneCt(oa.Court));
-            }
-        }
-
-        if (oa.Round.Courts.Count > 0) {
-            oa.Tour.Rounds.Add(oa.Round);
-        }
-
-        return oa.Tour;
-    }
-
-    private Tour AppendCourt(Overall oa, int maxCt) {
-        var lastR = oa.Tour.Rounds.LastOrDefault();
-        if (lastR != null && lastR.Courts.Count < maxCt) {
-            lastR.Courts.Add(CloneCt(oa.Court));
-        } else {
-            oa.Tour.Rounds.Add(new Round { Courts = [CloneCt(oa.Court)] });
-        }
-        return oa.Tour;
-    }
-
-    private int CountPos(Court court) {
-        return court.Team1.Players.Count + court.Team2.Players.Count;
-    }
-
     #endregion
 
     #region util
 
-    private Round CloneRd(Round rd) {
-        return new Round { Courts = new(rd.Courts) };
-    }
 
     private Court CloneCt(Court ct) {
         return new Court {

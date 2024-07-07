@@ -23,6 +23,22 @@ public class Overall {
         Round = new();
         Court = new();
     }
+
+    public void CheckCourt(int maxCt) {
+        if (Court.CountPlayers() == 4) {
+            if (Round.Courts.Count == maxCt) {
+                Tour.Rounds.Add(Round.Clone());
+                Round = new() { Courts = [Court.Clone()] };
+            } else {
+                Round.Courts.Add(Court);
+            }
+        }
+
+        if (Round.Courts.Count > 0) {
+            Tour.Rounds.Add(Round);
+        }
+    }
+
 }
 
 public class Tour {
@@ -45,6 +61,10 @@ public class Round {
     public bool Contain(int player) {
         return Courts.Any(c => c.Contain(player));
     }
+
+    public Round Clone() {
+        return new Round { Courts = new(Courts) };
+    }
 }
 
 public class Court {
@@ -59,6 +79,17 @@ public class Court {
 
     public bool Contain(int player) {
         return Team1.Players.Contains(player) || Team2.Players.Contains(player);
+    }
+
+    public int CountPlayers() {
+        return Team1.Players.Count + Team2.Players.Count;
+    }
+
+    public Court Clone() {
+        return new Court {
+            Team1 = new() { Players = new(Team1.Players) },
+            Team2 = new() { Players = new(Team2.Players) }
+        };
     }
 }
 
