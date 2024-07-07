@@ -14,7 +14,7 @@ public class Overall {
     }
 
     public void CheckCourt() {
-        if (Court.CountPlayers() == 4) {
+        if (Court.Players() == 4) {
             if (Round.Courts.Count == MaxCt) {
                 Tour.Rounds.Add(Round.Clone());
                 Round = new() { Courts = [Court.Clone()] };
@@ -70,7 +70,7 @@ public class Court {
         return Team1.Players.Contains(player) || Team2.Players.Contains(player);
     }
 
-    public int CountPlayers() {
+    public int Players() {
         return Team1.Players.Count + Team2.Players.Count;
     }
 
