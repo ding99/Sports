@@ -26,14 +26,14 @@ public partial class Planner {
 
     #region statistics
 
-    private static List<Player> STour(Tour tour) {
+    private static Player[] STour(Tour tour) {
         var max = MaxTour(tour);
         return Enumerable.Range(0, max + 1).Select(i => new Player() {
             Self = i,
             Played = PlayedTour(tour, i),
             Partners = PartsTour(tour, i, max + 1),
             Opponents = OpposTour(tour, i, max + 1)
-        }).ToList();
+        }).ToArray();
     }
 
     #region played

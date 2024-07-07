@@ -24,7 +24,7 @@ public partial class Planner {
     }
 
 
-    public (Tour, List<Player>, string) Find(int maxPlayers, int maxGames) {
+    public (Tour, Player[], string) Find(int maxPlayers, int maxGames) {
         var master = CreateMaster(maxPlayers, maxGames);
 
         StringBuilder b = new();
@@ -42,44 +42,16 @@ public partial class Planner {
 
     #region create tour
 
-    #region master
-
-    public static List<int> CreateMaster(int maxPlayers, int maxGames) {
-
-        //last one
-        return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
-
-        // 6 round
-        return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
-
-        #region random
-        List<int> list = [];
-        Random rd = new();
-        int a, maxPosition = maxPlayers * maxGames;
-
-        while (list.Count < maxPosition) {
-            a = rd.Next(maxPlayers);
-            if (list.Count(x => x == a) < maxGames) {
-                list.Add(a);
-            }
-        }
-
-        return list;
-        #endregion
-    }
-
-    #endregion
-
     #region tour
 
-    public (Tour, List<Player>, string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
+    public (Tour, Player[], string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
         Overall oa = new(maxPlayers / 4);
         var players = Enumerable.Range(0, maxPlayers).Select(i => new Player() {
             Self = i,
             Played = 0,
             Partners = new int[maxPlayers],
             Opponents = new int[maxPlayers]
-        }).ToList();
+        }).ToArray();
         bool changed = false;
         int count;
 
@@ -121,7 +93,7 @@ public partial class Planner {
 
     #region chose
     
-    public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, List<Player> players) {
+    public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
         if (!list.Any()) {
             return list;
         }
@@ -131,7 +103,7 @@ public partial class Planner {
     }
 
     //TODO: correct
-    public IEnumerable<Order> GetLestParted(IEnumerable<Order> list, List<Player> players, Court ct) {
+    public IEnumerable<Order> GetLestParted(IEnumerable<Order> list, Player[] players, Court ct) {
         var playedLess = players.Where(p => list.Any(s => s.Ply == p.Self)).Min(p => p.Played);
         var lestPlayeds = players.Where(p => list.Any(s => s.Ply == p.Self) && p.Played == playedLess);
         return list.Where(i => lestPlayeds.Any(p => p.Self == i.Ply));
@@ -139,18 +111,18 @@ public partial class Planner {
 
     #endregion
 
-    private bool Parted(List<Player> players, Court ct, int p) {
-        return ct.Team1.Players.Count == 1 && players.First(x => x.Self == ct.Team1.Players[0]).Partners[p] > 0
-            || ct.Team2.Players.Count == 1 && players.First(x => x.Self == ct.Team2.Players[0]).Partners[p] > 0;
+    private bool Parted(Player[] players, Court ct, int p) {
+        return ct.Team1.Players.Count == 1 && players[ct.Team1.Players[0]].Partners[p] > 0
+            || ct.Team2.Players.Count == 1 && players[ct.Team2.Players[0]].Partners[p] > 0;
     }
 
-    private bool UpdateList(Overall oa, List<Player> players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
+    private bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
         var fst = orders?.FirstOrDefault();
 
         if(result is true) {
             AddPlayer(oa, players, fst!.Ply);
-            players.First(x => x.Self == fst.Ply).Played++;
+            players[fst.Ply].Played++;
             b.Append($" {fst.Ply},");
             list.RemoveAt(fst.Idx);
         }
@@ -158,31 +130,31 @@ public partial class Planner {
         return result;
     }
 
-    private void AddPlayer(Overall oa, List<Player> players, int p) {
+    private void AddPlayer(Overall oa, Player[] players, int p) {
         switch (oa.Court.CountPlayers()) {
         case 0:
             oa.Court.Team1.Players.Add(p);
             break;
         case 1:
-            var self1 = players.First(x => x.Self == p);
-            var pter1 = players.First(x => x.Self == oa.Court.Team1.Players[0]);
+            var self1 = players[p];
+            var pter1 = players[oa.Court.Team1.Players[0]];
             self1.Partners[oa.Court.Team1.Players[0]]++;
             pter1.Partners[p]++;
             oa.Court.Team1.Players.Add(p);
             break;
         case 2:
-            players.First(x => x.Self == oa.Court.Team1.Players[0]).Opponents[p]++;
-            players.First(x => x.Self == oa.Court.Team1.Players[1]).Opponents[p]++;
+            players[oa.Court.Team1.Players[0]].Opponents[p]++;
+            players[oa.Court.Team1.Players[1]].Opponents[p]++;
             var self2 = players.First(x => x.Self == p);
             self2.Opponents[oa.Court.Team1.Players[0]]++;
             self2.Opponents[oa.Court.Team1.Players[1]]++;
             oa.Court.Team2.Players.Add(p);
             break;
         case 3:
-            players.First(x => x.Self == oa.Court.Team1.Players[0]).Opponents[p]++;
-            players.First(x => x.Self == oa.Court.Team1.Players[1]).Opponents[p]++;
-            var self3 = players.First(x => x.Self == p);
-            var pter3 = players.First(x => x.Self == oa.Court.Team2.Players[0]);
+            players[oa.Court.Team1.Players[0]].Opponents[p]++;
+            players[oa.Court.Team1.Players[1]].Opponents[p]++;
+            var self3 = players[p];
+            var pter3 = players[oa.Court.Team2.Players[0]];
             self3.Partners[oa.Court.Team2.Players[0]]++;
             self3.Opponents[oa.Court.Team1.Players[0]]++;
             self3.Opponents[oa.Court.Team1.Players[1]]++;
@@ -201,6 +173,34 @@ public partial class Planner {
             oa.Court = new();
             break;
         }
+    }
+
+    #endregion
+
+    #region master
+
+    public static List<int> CreateMaster(int maxPlayers, int maxGames) {
+
+        //last one
+        return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
+
+        // 6 round
+        return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
+
+        #region random
+        List<int> list = [];
+        Random rd = new();
+        int a, maxPosition = maxPlayers * maxGames;
+
+        while (list.Count < maxPosition) {
+            a = rd.Next(maxPlayers);
+            if (list.Count(x => x == a) < maxGames) {
+                list.Add(a);
+            }
+        }
+
+        return list;
+        #endregion
     }
 
     #endregion
