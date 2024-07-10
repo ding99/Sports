@@ -83,6 +83,8 @@ public partial class Planner {
                 unset = chosen;
             }
 
+            // min opponent
+
             // min+1 parted
             if ((oa.Court.Players() & 1) == 1) {
                 var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
@@ -93,8 +95,6 @@ public partial class Planner {
                     unset = chosen;
                 }
             }
-
-            // min opponent
 
             if (list.Count == count) {
                 break;
@@ -129,6 +129,13 @@ public partial class Planner {
     public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, int person) {
         var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[person]);
         var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min);
+        return list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+    }
+
+    //TODO correct
+    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, int person) {
+        var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Opponents[person]);
+        var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Opponents[person] == min);
         return list.Where(i => minPLayers.Any(p => p.Self == i.Person));
     }
 
