@@ -23,9 +23,9 @@ public partial class Planner {
 
     }
 
-    private static string DSummary(List<Summary> players) {
+    private static string DPlayers(Player[] players) {
         StringBuilder b = new();
-        players.ForEach(s => {
+        players.ToList().ForEach(s => {
             b.AppendLine($"-- {s.Self + 1} ({s.Played})");
 
             b.Append("Partners  ");

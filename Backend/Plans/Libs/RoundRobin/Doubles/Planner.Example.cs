@@ -20,20 +20,20 @@ public partial class Planner {
         Console.WriteLine(DTour(rr, $"Sample{persons}"));
 
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(DSummary(STour(rr)));
+        Console.WriteLine(DPlayers(STour(rr)));
     }
 
 
     #region statistics
 
-    private static List<Summary> STour(Tour tour) {
+    private static Player[] STour(Tour tour) {
         var max = MaxTour(tour);
-        return Enumerable.Range(0, max + 1).Select(i => new Summary() {
+        return Enumerable.Range(0, max + 1).Select(i => new Player() {
             Self = i,
             Played = PlayedTour(tour, i),
             Partners = PartsTour(tour, i, max + 1),
             Opponents = OpposTour(tour, i, max + 1)
-        }).ToList();
+        }).ToArray();
     }
 
     #region played
