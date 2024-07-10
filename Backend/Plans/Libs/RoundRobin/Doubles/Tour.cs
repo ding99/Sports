@@ -4,16 +4,18 @@ public class Overall {
     public Tour Tour { get; set; }
     public Round Round { get; set; }
     public Court Court { get; set; }
+    public int MaxCt { get; set; }
 
-    public Overall() {
+    public Overall(int maxCt) {
+        MaxCt = maxCt;
         Tour = new();
         Round = new();
         Court = new();
     }
 
-    public void CheckCourt(int maxCt) {
-        if (Court.CountPlayers() == 4) {
-            if (Round.Courts.Count == maxCt) {
+    public void CheckCourt() {
+        if (Court.Players() == 4) {
+            if (Round.Courts.Count == MaxCt) {
                 Tour.Rounds.Add(Round.Clone());
                 Round = new() { Courts = [Court.Clone()] };
             } else {
@@ -68,7 +70,7 @@ public class Court {
         return Team1.Players.Contains(player) || Team2.Players.Contains(player);
     }
 
-    public int CountPlayers() {
+    public int Players() {
         return Team1.Players.Count + Team2.Players.Count;
     }
 

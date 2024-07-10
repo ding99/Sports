@@ -13,7 +13,7 @@ public class Player {
 }
 
 public class Order(int idx, int ply) {
-    public int Idx { get; set; } = idx;
-    public int Ply { get; set; } = ply;
+    public int Index { get; set; } = idx;
+    public int Person { get; set; } = ply;
 }
 
