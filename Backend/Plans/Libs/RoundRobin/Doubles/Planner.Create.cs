@@ -58,19 +58,31 @@ public partial class Planner {
         while ((count = list.Count) > 0) {
             var unset = list
                 .Select((d, i) => new Order(i, d))
-                .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person) && !Parted(players, oa.Court, x.Person));
+                .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person) /*&& !Parted(players, oa.Court, x.Person)*/);
 
             //TODO exception sometimes
             //TODO parted < maxPart
 
-            // min parted
+            IEnumerable<Order> chosen;
 
-            // min played
-            var choosen = GetMinPlayed(unset, players);
-            if (UpdateList(oa, players, choosen, list, b)) {
-                unset = choosen;
+            // min parted
+            if ((oa.Court.Players() & 1) == 1) {
+                var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
+                chosen = GetMinParted(unset, players, psn);
+                if (UpdateList(oa, players, chosen, list, b)) {
+                    continue;
+                } else {
+                    unset = chosen;
+                }
             }
 
+            // min played
+            chosen = GetMinPlayed(unset, players);
+            if (UpdateList(oa, players, chosen, list, b)) {
+                continue;
+            } else {
+                unset = chosen;
+            }
 
             if (list.Count == count) {
                 break;
@@ -103,10 +115,15 @@ public partial class Planner {
     }
 
     //TODO: correct
-    public IEnumerable<Order> GetLestParted(IEnumerable<Order> list, Player[] players, Court ct) {
-        var playedLess = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Played);
-        var lestPlayeds = players.Where(p => list.Any(s => s.Person == p.Self) && p.Played == playedLess);
-        return list.Where(i => lestPlayeds.Any(p => p.Self == i.Person));
+    public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, int person) {
+        var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[person]);
+        var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min);
+        var selected = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+
+        var minPlusPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min + 1);
+        selected = selected.Concat(list.Where(i => minPlusPLayers.Any(p => p.Self == i.Person)));
+
+        return selected;
     }
 
     #endregion
@@ -182,7 +199,7 @@ public partial class Planner {
     public static List<int> CreateMaster(int maxPlayers, int maxGames) {
 
         //last one
-        return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
+        //return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
 
         // 6 round
         return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
