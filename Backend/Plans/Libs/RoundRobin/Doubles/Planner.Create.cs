@@ -1,6 +1,8 @@
 ﻿using System.Text;
 
-namespace Libs.RoundRobin.Doubles; 
+using Libs.RoundRobin.Doubles.Models;
+
+namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 

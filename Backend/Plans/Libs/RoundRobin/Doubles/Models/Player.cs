@@ -1,4 +1,4 @@
-﻿namespace Libs.RoundRobin.Doubles;
+﻿namespace Libs.RoundRobin.Doubles.Models;
 
 public class Player {
     public int Self { get; set; }
