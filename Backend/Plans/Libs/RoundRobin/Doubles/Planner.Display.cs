@@ -9,15 +9,16 @@ public partial class Planner {
 
     private static string DTour(Tour tour, string name) {
         StringBuilder b = new($"-- Tour {name} (Rounds {tour.Rounds.Count})");
+        int r = 0;
         b.AppendLine();
         b.AppendLine(string.Join(
             Environment.NewLine,
-            tour.Rounds.Select(r => string.Join(", ", r.Courts.Select(c => DCourt(c))))
+            tour.Rounds.Select((r, i) => $"Round{i + 1, -2}: {string.Join(", ", r.Courts.Select(c => DCourt(c)))}")
         ));
         return b.ToString();
 
         string DCourt(Court c) {
-            return $"{DTeam(c.Team1)} {DTeam(c.Team2)}";
+            return $"{DTeam(c.Team1)} vs {DTeam(c.Team2)}";
         }
 
         string DTeam(Team t) {
