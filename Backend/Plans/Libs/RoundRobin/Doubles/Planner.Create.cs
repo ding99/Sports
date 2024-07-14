@@ -1,5 +1,4 @@
 ﻿using System.Text;
-
 using Libs.RoundRobin.Doubles.Models;
 
 namespace Libs.RoundRobin.Doubles;
@@ -24,7 +23,6 @@ public partial class Planner {
         Console.WriteLine(DPlayers(players));
     }
 
-
     public (Tour, Player[], string) Find(int maxPlayers, int maxGames) {
         var master = CreateMaster(maxPlayers, maxGames);
 
@@ -36,7 +34,6 @@ public partial class Planner {
 
         var (tour, players, dsp) = CreateTour(maxPlayers, maxGames, master);
         b.Append(dsp);
-        b.AppendLine($"Rounds {tour.Rounds.Count}");
 
         return (tour, players, b.ToString());
     }
@@ -64,38 +61,26 @@ public partial class Planner {
 
             //TODO exception sometimes
 
-            IEnumerable<Order> chosen;
-
             // min parted
             if ((oa.Court.Players() & 1) == 1) {
                 var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
-                chosen = GetMinParted(unset, players, psn);
-                if (UpdateList(oa, players, chosen, list, b)) {
-                    continue;
-                } else {
-                    unset = chosen;
-                }
+                unset = GetMinParted(unset, players, psn);
             }
 
             // min played
-            chosen = GetMinPlayed(unset, players);
-            if (UpdateList(oa, players, chosen, list, b)) {
-                continue;
-            } else {
-                unset = chosen;
-            }
+            unset = GetMinPlayed(unset, players);
 
             // min opponent
+            //unset = GetMinOppo(unset, players, oa.Court);
 
             // min+1 parted
-            if ((oa.Court.Players() & 1) == 1) {
-                var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
-                chosen = GetMinPlusParted(unset, players, psn);
-                if (UpdateList(oa, players, chosen, list, b)) {
-                    continue;
-                } else {
-                    unset = chosen;
-                }
+            //if ((oa.Court.Players() & 1) == 1) {
+            //    var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
+            //    unset = GetMinPlusParted(unset, players, psn);
+            //}
+
+            if (UpdateList(oa, players, unset, list, b)) {
+                continue;
             }
 
             if (list.Count == count) {
@@ -125,20 +110,25 @@ public partial class Planner {
         }
         var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Played);
         var minPlayeds = players.Where(p => list.Any(s => s.Person == p.Self) && p.Played == min);
-        return list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
+        var result = list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
+        return result != null && result.Any() ? result : list;
     }
 
     public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, int person) {
-        var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[person]);
+        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Partners[person]);
         var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min);
-        return list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+        var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+        return result != null && result.Any() ? result : list;
     }
 
-    //TODO correct
-    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, int person) {
-        var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Opponents[person]);
-        var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Opponents[person] == min);
-        return list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, Court ct) {
+        if (ct.Players() < 2) {
+            return list;
+        }
+        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => ct.Team1.Players.Min(c => p.Opponents[c]));
+        var minPLayers = players.Where(p => list.Any(s => s.Person == p.Self) && ct.Team1.Players.Any(c => p.Opponents[c] == min));
+        var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+        return result != null && result.Any() ? result : list;
     }
 
     public IEnumerable<Order> GetMinPlusParted(IEnumerable<Order> list, Player[] players, int person) {
@@ -149,7 +139,7 @@ public partial class Planner {
         var minPlusPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min + 1);
         selected = selected.Concat(list.Where(i => minPlusPLayers.Any(p => p.Self == i.Person)));
 
-        return selected;
+        return selected != null && selected.Any() ? selected : list;
     }
 
     #endregion
