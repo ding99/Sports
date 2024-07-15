@@ -12,8 +12,8 @@ public class Player {
     }
 }
 
-public class Order(int idx, int ply) {
-    public int Index { get; set; } = idx;
-    public int Person { get; set; } = ply;
+public class Order(int index, int person) {
+    public int Index { get; set; } = index;
+    public int Person { get; set; } = person;
 }
 

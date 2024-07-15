@@ -32,7 +32,7 @@ public partial class Planner {
 
         Console.WriteLine(b.ToString());
 
-        var (tour, players, dsp) = CreateTour(maxPlayers, maxGames, master);
+        var (tour, players, dsp) = CreateTour(maxPlayers, master);
         b.Append(dsp);
 
         return (tour, players, b.ToString());
@@ -42,7 +42,7 @@ public partial class Planner {
 
     #region tour
 
-    public (Tour, Player[], string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
+    public (Tour, Player[], string) CreateTour(int maxPlayers, List<int> list) {
         Overall oa = new(maxPlayers / 4);
         var players = Enumerable.Range(0, maxPlayers).Select(i => new Player() {
             Self = i,
@@ -53,22 +53,25 @@ public partial class Planner {
         int count;
 
         StringBuilder b = new("Added");
-
         while ((count = list.Count) > 0) {
             var unset = list
-                .Select((d, i) => new Order(i, d))
+                .Select((data, index) => new Order(index, data))
                 .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person));
 
-            //TODO exception sometimes
-
             // min parted
+            Console.ForegroundColor = ConsoleColor.White;
             if ((oa.Court.Players() & 1) == 1) {
                 var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
                 unset = GetMinParted(unset, players, psn);
+                Console.Write($"Parted {unset.Count()}");
+            } else {
+                Console.Write("<>      ");
             }
 
             // min played
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
             unset = GetMinPlayed(unset, players);
+            Console.Write($" Played {unset.Count()}");
 
             // min opponent
             //unset = GetMinOppo(unset, players, oa.Court);
@@ -79,6 +82,7 @@ public partial class Planner {
             //    unset = GetMinPlusParted(unset, players, psn);
             //}
 
+            Console.WriteLine($" rounds ({oa.Tour.Rounds.Count}) courts ({oa.Round.Courts.Count}) players ({oa.Court.Players()})");
             if (UpdateList(oa, players, unset, list, b)) {
                 continue;
             }
@@ -109,7 +113,9 @@ public partial class Planner {
             return list;
         }
         var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Played);
+        Console.Write($" m({min})");
         var minPlayeds = players.Where(p => list.Any(s => s.Person == p.Self) && p.Played == min);
+        Console.Write($" mP({minPlayeds.Count()})");
         var result = list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
         return result != null && result.Any() ? result : list;
     }
