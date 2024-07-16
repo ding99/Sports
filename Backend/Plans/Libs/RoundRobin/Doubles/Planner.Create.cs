@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
 using Libs.RoundRobin.Doubles.Models;
 
 namespace Libs.RoundRobin.Doubles;
@@ -58,30 +59,27 @@ public partial class Planner {
                 .Select((data, index) => new Order(index, data))
                 .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person));
 
-            // min parted
-            Console.ForegroundColor = ConsoleColor.White;
-            if ((oa.Court.Players() & 1) == 1) {
-                var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
-                unset = GetMinParted(unset, players, psn);
-                Console.Write($"Parted {unset.Count()}");
-            } else {
-                Console.Write("<>      ");
-            }
-
-            // min played
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            unset = GetMinPlayed(unset, players);
-            Console.Write($" Played {unset.Count()}");
-
             // min opponent
-            //unset = GetMinOppo(unset, players, oa.Court);
+            Console.ForegroundColor = ConsoleColor.White;
+            unset = GetMinOppo(unset, players, oa.Court);
+            Console.Write($" Oppo {unset.Count()}");
+
+            // min part
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            unset = GetMinParted(unset, players, oa.Court);
+            Console.Write($" Part {unset.Count()}");
+
+            // min play
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            unset = GetMinPlayed(unset, players);
+            Console.Write($" Play {unset.Count()}");
 
             // min+1 parted
-            //if ((oa.Court.Players() & 1) == 1) {
-            //    var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
-            //    unset = GetMinPlusParted(unset, players, psn);
-            //}
+            //Console.ForegroundColor = ConsoleColor.White;
+            //unset = GetMinPlusParted(unset, players, oa.Court);
+            //Console.Write($" Plus {unset.Count()}");
 
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine($" rounds ({oa.Tour.Rounds.Count}) courts ({oa.Round.Courts.Count}) players ({oa.Court.Players()})");
             if (UpdateList(oa, players, unset, list, b)) {
                 continue;
@@ -109,9 +107,6 @@ public partial class Planner {
     #region chose
     
     public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
-        if (!list.Any()) {
-            return list;
-        }
         var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Played);
         Console.Write($" m({min})");
         var minPlayeds = players.Where(p => list.Any(s => s.Person == p.Self) && p.Played == min);
@@ -120,9 +115,13 @@ public partial class Planner {
         return result != null && result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, int person) {
-        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Partners[person]);
-        var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min);
+    public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
+        if((ct.Players() & 1) == 0) {
+            return list;
+        }
+        var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
+        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Partners[psn]);
+        var minPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min);
         var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
         return result != null && result.Any() ? result : list;
     }
@@ -137,12 +136,16 @@ public partial class Planner {
         return result != null && result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinPlusParted(IEnumerable<Order> list, Player[] players, int person) {
-        var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[person]);
-        var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min);
+    public IEnumerable<Order> GetMinPlusParted(IEnumerable<Order> list, Player[] players, Court ct) {
+        if ((ct.Players() & 1) == 0) {
+            return list;
+        }
+        var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
+        var min = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[psn]);
+        var minPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min);
         var selected = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
 
-        var minPlusPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min + 1);
+        var minPlusPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min + 1);
         selected = selected.Concat(list.Where(i => minPlusPLayers.Any(p => p.Self == i.Person)));
 
         return selected != null && selected.Any() ? selected : list;
@@ -157,7 +160,15 @@ public partial class Planner {
 
     private bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
-        var fst = orders?.FirstOrDefault();
+        var groups = orders?.GroupBy(
+            o => o.Person,
+            (baseO, os) => new {
+                Key = baseO,
+                Count = os.Count()
+            });
+        var max = groups?.Max(g => g.Count);
+        var group = groups?.First(g => g.Count == max);
+        var fst = orders?.First(o => o.Person == group?.Key);
 
         if (result is true) {
             AddPlayer(oa, players, fst!.Person);
