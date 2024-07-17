@@ -6,7 +6,7 @@ public partial class Planner {
         Console.WriteLine($"-- Round Robin Doubles: persons {persons}, games {games}");
         Console.WriteLine();
 
-        ShowSample(persons);
+        //ShowSample(persons);
         CreateDbl(persons, games);
 
         Console.ResetColor();

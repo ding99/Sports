@@ -1,6 +1,8 @@
 ﻿using System.Text;
 
-namespace Libs.RoundRobin.Doubles; 
+using Libs.RoundRobin.Doubles.Models;
+
+namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
@@ -22,7 +24,6 @@ public partial class Planner {
         Console.WriteLine(DPlayers(players));
     }
 
-
     public (Tour, Player[], string) Find(int maxPlayers, int maxGames) {
         var master = CreateMaster(maxPlayers, maxGames);
 
@@ -32,9 +33,8 @@ public partial class Planner {
 
         Console.WriteLine(b.ToString());
 
-        var (tour, players, dsp) = CreateTour(maxPlayers, maxGames, master);
+        var (tour, players, dsp) = CreateTour(maxPlayers, master);
         b.Append(dsp);
-        b.AppendLine($"Rounds {tour.Rounds.Count}");
 
         return (tour, players, b.ToString());
     }
@@ -43,7 +43,7 @@ public partial class Planner {
 
     #region tour
 
-    public (Tour, Player[], string) CreateTour(int maxPlayers, int maxGames, List<int> list) {
+    public (Tour, Player[], string) CreateTour(int maxPlayers, List<int> list) {
         Overall oa = new(maxPlayers / 4);
         var players = Enumerable.Range(0, maxPlayers).Select(i => new Player() {
             Self = i,
@@ -54,46 +54,35 @@ public partial class Planner {
         int count;
 
         StringBuilder b = new("Added");
-
         while ((count = list.Count) > 0) {
             var unset = list
-                .Select((d, i) => new Order(i, d))
+                .Select((data, index) => new Order(index, data))
                 .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person));
 
-            //TODO exception sometimes
-
-            IEnumerable<Order> chosen;
-
-            // min parted
-            if ((oa.Court.Players() & 1) == 1) {
-                var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
-                chosen = GetMinParted(unset, players, psn);
-                if (UpdateList(oa, players, chosen, list, b)) {
-                    continue;
-                } else {
-                    unset = chosen;
-                }
-            }
-
-            // min played
-            chosen = GetMinPlayed(unset, players);
-            if (UpdateList(oa, players, chosen, list, b)) {
-                continue;
-            } else {
-                unset = chosen;
-            }
-
             // min opponent
+            Console.ForegroundColor = ConsoleColor.White;
+            unset = GetMinOppo(unset, players, oa.Court);
+            Console.Write($" Oppo {unset.Count()}");
+
+            // min part
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            unset = GetMinParted(unset, players, oa.Court);
+            Console.Write($" Part {unset.Count()}");
+
+            // min play
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            unset = GetMinPlayed(unset, players);
+            Console.Write($" Play {unset.Count()}");
 
             // min+1 parted
-            if ((oa.Court.Players() & 1) == 1) {
-                var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Players[0] : oa.Court.Team2.Players[0];
-                chosen = GetMinPlusParted(unset, players, psn);
-                if (UpdateList(oa, players, chosen, list, b)) {
-                    continue;
-                } else {
-                    unset = chosen;
-                }
+            //Console.ForegroundColor = ConsoleColor.White;
+            //unset = GetMinPlusParted(unset, players, oa.Court);
+            //Console.Write($" Plus {unset.Count()}");
+
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine($" rounds ({oa.Tour.Rounds.Count}) courts ({oa.Round.Courts.Count}) players ({oa.Court.Players()})");
+            if (UpdateList(oa, players, unset, list, b)) {
+                continue;
             }
 
             if (list.Count == count) {
@@ -118,36 +107,48 @@ public partial class Planner {
     #region chose
     
     public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
-        if (!list.Any()) {
+        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Played);
+        Console.Write($" m({min})");
+        var minPlayeds = players.Where(p => list.Any(s => s.Person == p.Self) && p.Played == min);
+        Console.Write($" mP({minPlayeds.Count()})");
+        var result = list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
+        return result != null && result.Any() ? result : list;
+    }
+
+    public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
+        if((ct.Players() & 1) == 0) {
             return list;
         }
-        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Played);
-        var minPlayeds = players.Where(p => list.Any(s => s.Person == p.Self) && p.Played == min);
-        return list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
+        var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
+        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Partners[psn]);
+        var minPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min);
+        var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+        return result != null && result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, int person) {
-        var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[person]);
-        var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min);
-        return list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, Court ct) {
+        if (ct.Players() < 2) {
+            return list;
+        }
+        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => ct.Team1.Players.Min(c => p.Opponents[c]));
+        var minPLayers = players.Where(p => list.Any(s => s.Person == p.Self) && ct.Team1.Players.Any(c => p.Opponents[c] == min));
+        var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+        return result != null && result.Any() ? result : list;
     }
 
-    //TODO correct
-    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, int person) {
-        var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Opponents[person]);
-        var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Opponents[person] == min);
-        return list.Where(i => minPLayers.Any(p => p.Self == i.Person));
-    }
-
-    public IEnumerable<Order> GetMinPlusParted(IEnumerable<Order> list, Player[] players, int person) {
-        var min = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[person]);
-        var minPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min);
+    public IEnumerable<Order> GetMinPlusParted(IEnumerable<Order> list, Player[] players, Court ct) {
+        if ((ct.Players() & 1) == 0) {
+            return list;
+        }
+        var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
+        var min = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[psn]);
+        var minPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min);
         var selected = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
 
-        var minPlusPLayers = players.Where(p => p.Self != person && list.Any(s => s.Person == p.Self) && p.Partners[person] == min + 1);
+        var minPlusPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min + 1);
         selected = selected.Concat(list.Where(i => minPlusPLayers.Any(p => p.Self == i.Person)));
 
-        return selected;
+        return selected != null && selected.Any() ? selected : list;
     }
 
     #endregion
@@ -157,9 +158,17 @@ public partial class Planner {
             || ct.Team2.Players.Count == 1 && players[ct.Team2.Players[0]].Partners[p] > 0;
     }
 
-    private bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
+    public bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
-        var fst = orders?.FirstOrDefault();
+        var groups = orders?.GroupBy(
+            o => o.Person,
+            (baseO, os) => new {
+                Key = baseO,
+                Count = os.Count()
+            });
+        var max = groups?.Max(g => g.Count);
+        var group = groups?.First(g => g.Count == max);
+        var fst = orders?.First(o => o.Person == group?.Key);
 
         if (result is true) {
             AddPlayer(oa, players, fst!.Person);
