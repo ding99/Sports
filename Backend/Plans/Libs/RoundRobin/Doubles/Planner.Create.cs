@@ -1,5 +1,5 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
+
 using Libs.RoundRobin.Doubles.Models;
 
 namespace Libs.RoundRobin.Doubles;
@@ -158,7 +158,7 @@ public partial class Planner {
             || ct.Team2.Players.Count == 1 && players[ct.Team2.Players[0]].Partners[p] > 0;
     }
 
-    private bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
+    public bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
         var groups = orders?.GroupBy(
             o => o.Person,
