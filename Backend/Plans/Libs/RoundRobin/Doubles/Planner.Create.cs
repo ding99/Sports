@@ -106,34 +106,35 @@ public partial class Planner {
 
     #region chose
     
-    public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
-        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Played);
-        Console.Write($" m({min})");
-        var minPlayeds = players.Where(p => list.Any(s => s.Person == p.Self) && p.Played == min);
-        Console.Write($" mP({minPlayeds.Count()})");
+    public static IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
+        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+        var min = quali.Min(p => p.Played);
+        var minPlayeds = quali.Where(p => p.Played == min);
         var result = list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
-        return result != null && result.Any() ? result : list;
+        return result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
+    public static IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
         if((ct.Players() & 1) == 0) {
             return list;
         }
         var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
-        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Partners[psn]);
-        var minPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min);
+        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+        var min = quali.Min(p => p.Partners[psn]);
+        var minPLayers = quali.Where(p => p.Self != psn && p.Partners[psn] == min);
         var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
-        return result != null && result.Any() ? result : list;
+        return result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, Court ct) {
+    public static IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, Court ct) {
         if (ct.Players() < 2) {
             return list;
         }
-        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => ct.Team1.Players.Min(c => p.Opponents[c]));
-        var minPLayers = players.Where(p => list.Any(s => s.Person == p.Self) && ct.Team1.Players.Any(c => p.Opponents[c] == min));
+        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+        var min = quali.Min(p => ct.Team1.Players.Min(c => p.Opponents[c]));
+        var minPLayers = quali.Where(p => ct.Team1.Players.Any(c => p.Opponents[c] == min));
         var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
-        return result != null && result.Any() ? result : list;
+        return result.Any() ? result : list;
     }
 
     public IEnumerable<Order> GetMinPlusParted(IEnumerable<Order> list, Player[] players, Court ct) {
@@ -141,14 +142,15 @@ public partial class Planner {
             return list;
         }
         var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
-        var min = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[psn]);
-        var minPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min);
+        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+        var min = quali.Where(p => p.Self != psn).Min(p => p.Partners[psn]);
+        var minPLayers = quali.Where(p => p.Self != psn && p.Partners[psn] == min);
         var selected = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
 
         var minPlusPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min + 1);
         selected = selected.Concat(list.Where(i => minPlusPLayers.Any(p => p.Self == i.Person)));
 
-        return selected != null && selected.Any() ? selected : list;
+        return selected.Any() ? selected : list;
     }
 
     #endregion

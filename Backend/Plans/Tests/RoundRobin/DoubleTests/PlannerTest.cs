@@ -30,7 +30,7 @@ public class PlannerTest {
         ];
         IEnumerable<Order> list = [new(0, 3), new(2, 5), new(3, 1), new(5, 2), new(6, 2), new(7, 5)];
 
-        var result = planner.GetMinPlayed(list, players);
+        var result = Planner.GetMinPlayed(list, players);
 
         result.Should().HaveCount(4);
 
@@ -58,7 +58,7 @@ public class PlannerTest {
         ];
         IEnumerable<Order> list = [new(0, 3), new(2, 5), new(3, 1), new(5, 2), new(6, 2), new(7, 5)];
 
-        var result = planner.GetMinParted(list, players, ct);
+        var result = Planner.GetMinParted(list, players, ct);
 
         result.Should().HaveCount(5);
 
@@ -87,7 +87,7 @@ public class PlannerTest {
         ];
         IEnumerable<Order> list = [new(0, 3), new(2, 5), new(3, 1), new(5, 2), new(6, 2), new(7, 5)];
 
-        var result = planner.GetMinOppo(list, players, ct);
+        var result = Planner.GetMinOppo(list, players, ct);
 
         result.Should().HaveCount(5);
 
