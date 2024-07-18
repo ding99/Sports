@@ -9,12 +9,6 @@ namespace Tests.RoundRobin.DoubleTests;
 
 public class PlannerTest {
 
-    private readonly Planner planner;
-
-    public PlannerTest() {
-        planner = new();
-    }
-
     #region min played
 
     [Fact]
