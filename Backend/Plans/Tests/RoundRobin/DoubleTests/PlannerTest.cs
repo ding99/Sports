@@ -15,7 +15,6 @@ public class PlannerTest {
         planner = new();
     }
 
-
     #region min played
 
     [Fact]
@@ -127,7 +126,7 @@ public class PlannerTest {
         List<int> list = [3, 0, 4, 5, 1, 0, 2, 2, 5, 4];
         StringBuilder b = new();
 
-        var result = planner.UpdateList(oa, players, orders, list, b);
+        var result = Planner.UpdateList(oa, players, orders, list, b);
 
         result.Should().BeTrue();
 
@@ -166,7 +165,7 @@ public class PlannerTest {
         List<int> list = [3, 0, 4, 5, 1, 0, 2, 2, 5];
         StringBuilder b = new();
 
-        var result = planner.UpdateList(oa, players, orders, list, b);
+        var result = Planner.UpdateList(oa, players, orders, list, b);
 
         result.Should().BeTrue();
 
@@ -205,7 +204,7 @@ public class PlannerTest {
         List<int> list = [3, 4, 5, 1, 0, 2, 2, 5];
         StringBuilder b = new();
 
-        var result = planner.UpdateList(oa, players, orders, list, b);
+        var result = Planner.UpdateList(oa, players, orders, list, b);
 
         result.Should().BeTrue();
 
@@ -240,7 +239,7 @@ public class PlannerTest {
         List<int> list = [3, 4, 1, 0, 2, 2, 5];
         StringBuilder b = new();
 
-        var result = planner.UpdateList(oa, players, orders, list, b);
+        var result = Planner.UpdateList(oa, players, orders, list, b);
 
         result.Should().BeTrue();
 
