@@ -168,7 +168,7 @@ public partial class Planner {
             });
         var max = groups?.Max(g => g.Count);
         var group = groups?.First(g => g.Count == max);
-        var fst = orders?.First(o => o.Person == group?.Key);
+        var fst = orders?.Last(o => o.Person == group?.Key);
 
         if (result is true) {
             AddPlayer(oa, players, fst!.Person);

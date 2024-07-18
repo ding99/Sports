@@ -15,6 +15,37 @@ public class PlannerTest {
         planner = new();
     }
 
+    #region min opponent
+
+    [Fact]
+    public void GetMinOppoTest_Team2_Player0() {
+        Court ct = new() { Team1 = new([4, 0]) };
+        Player[] players = [
+            new Player{ Self = 0, Played = 2, Partners = [0,0,0,0,1,1], Opponents = [0,0,0,1,1,0] },
+            new Player{ Self = 1, Played = 2, Partners = [0,0,1,1,0,0], Opponents = [1,0,0,1,1,1] },
+            new Player{ Self = 2, Played = 1, Partners = [0,1,0,0,0,0], Opponents = [0,0,0,1,1,0] },
+            new Player{ Self = 3, Played = 2, Partners = [0,1,0,0,1,0], Opponents = [1,1,1,0,0,1] },
+            new Player{ Self = 4, Played = 2, Partners = [1,0,0,1,0,0], Opponents = [0,1,1,0,0,0] },
+            new Player{ Self = 5, Played = 1, Partners = [1,0,0,0,0,0], Opponents = [0,1,0,1,0,0] }
+        ];
+        IEnumerable<Order> list = [new(0, 3), new(2, 5), new(3, 1), new(5, 2), new(6, 2), new(7, 5)];
+
+        var result = planner.GetMinOppo(list, players, ct);
+
+        result.Should().HaveCount(5);
+
+        var people = result.ToArray();
+        people[0].Person.Should().Be(3);
+        people[1].Person.Should().Be(5);
+        people[2].Person.Should().Be(2);
+        people[3].Person.Should().Be(2);
+        people[4].Person.Should().Be(5);
+    }
+
+    #endregion
+
+    #region update list
+
     [Fact]
     public void UpdateListTest_Team1_Player0() {
         var oa = new Overall(1) {
@@ -173,5 +204,7 @@ public class PlannerTest {
         players[0].Opponents[2].Should().Be(1);
         players[4].Opponents[2].Should().Be(2);
     }
+
+    #endregion
 
 }
