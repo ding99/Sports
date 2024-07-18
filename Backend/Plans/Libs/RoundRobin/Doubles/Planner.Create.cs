@@ -115,14 +115,14 @@ public partial class Planner {
     }
 
     public static IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
-        if((ct.Players() & 1) == 0) {
+        if ((ct.Players() & 1) == 0) {
             return list;
         }
         var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
         var quali = players.Where(p => list.Any(s => s.Person == p.Self));
         var min = quali.Min(p => p.Partners[psn]);
-        var minPLayers = quali.Where(p => p.Self != psn && p.Partners[psn] == min);
-        var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+        var minPlayers = quali.Where(p => p.Partners[psn] == min);
+        var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
         return result.Any() ? result : list;
     }
 
@@ -132,8 +132,8 @@ public partial class Planner {
         }
         var quali = players.Where(p => list.Any(s => s.Person == p.Self));
         var min = quali.Min(p => ct.Team1.Players.Min(c => p.Opponents[c]));
-        var minPLayers = quali.Where(p => ct.Team1.Players.Any(c => p.Opponents[c] == min));
-        var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
+        var minPlayers = quali.Where(p => ct.Team1.Players.Any(c => p.Opponents[c] == min));
+        var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
         return result.Any() ? result : list;
     }
 
