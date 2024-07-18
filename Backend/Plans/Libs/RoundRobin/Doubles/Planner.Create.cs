@@ -137,6 +137,7 @@ public partial class Planner {
         return result.Any() ? result : list;
     }
 
+    #region remove
     public IEnumerable<Order> GetMinPlusParted(IEnumerable<Order> list, Player[] players, Court ct) {
         if ((ct.Players() & 1) == 0) {
             return list;
@@ -152,13 +153,9 @@ public partial class Planner {
 
         return selected.Any() ? selected : list;
     }
-
     #endregion
 
-    private bool Parted(Player[] players, Court ct, int p) {
-        return ct.Team1.Players.Count == 1 && players[ct.Team1.Players[0]].Partners[p] > 0
-            || ct.Team2.Players.Count == 1 && players[ct.Team2.Players[0]].Partners[p] > 0;
-    }
+    #endregion
 
     public static bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
