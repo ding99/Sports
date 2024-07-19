@@ -20,7 +20,7 @@ public class Caller {
         var root = new RootCommand("Plan a double round robin");
         root.AddArgument(players);
         root.AddArgument(games);
-        root.SetHandler((p, g) => new Planner().Start(p, g), players, games);
+        root.SetHandler((p, g) => new Planner().StartDouble(p, g), players, games);
 
         var result = root.Invoke(args);
         Console.WriteLine($"Result: {result}");
