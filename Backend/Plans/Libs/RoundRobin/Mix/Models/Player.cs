@@ -4,13 +4,13 @@ public class Player {
     public int Self { get; set; }
     public int Played { get; set; }
     public int[] Partners { get; set; }
-    public int[] OppoM { get; set; }
-    public int[] OppoW { get; set; }
+    public int[] OppoSame { get; set; }
+    public int[] OppoDiff { get; set; }
 
     public Player() {
         Partners = [];
-        OppoM = [];
-        OppoW = [];
+        OppoSame = [];
+        OppoDiff = [];
     }
 }
 

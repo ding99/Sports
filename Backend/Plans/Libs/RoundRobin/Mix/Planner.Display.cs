@@ -37,12 +37,12 @@ public partial class Planner {
             b.AppendLine($" ({s.Partners.Sum()})");
 
             b.Append("Opponents: Men ");
-            b.Append(string.Join(", ", s.OppoM.Select((v, i) => $"{i + 1}-{v}")));
-            b.Append($" ({s.OppoM.Sum()})");
+            b.Append(string.Join(", ", s.OppoSame.Select((v, i) => $"{i + 1}-{v}")));
+            b.Append($" ({s.OppoSame.Sum()})");
 
             b.Append("; Women ");
-            b.Append(string.Join(", ", s.OppoW.Select((v, i) => $"{i + 1}-{v}")));
-            b.AppendLine($" ({s.OppoW.Sum()})");
+            b.Append(string.Join(", ", s.OppoDiff.Select((v, i) => $"{i + 1}-{v}")));
+            b.AppendLine($" ({s.OppoDiff.Sum()})");
         });
         return b.ToString();
     }

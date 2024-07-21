@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using CSharpFunctionalExtensions;
 
 using Libs.RoundRobin.Mix.Models;
 
@@ -7,61 +7,69 @@ namespace Libs.RoundRobin.Mix;
 public partial class Planner {
 
     public void CreateMix(int men, int women, int games) {
-        var (tour, players) = Pair(men, women, games);
-        log.Information(DTour(tour, $"{men}M/{women}W-{games}Games"));
-        log.Information("{dsp}", DPlayers(players));
-    }
+        var result = Pair(men, women, games);
 
-    public (Tour, Player[]) Pair(int men, int women, int games) {
-        var master = CreateMaster(men, women, games);
-
-        log.Information("Men   List {men} {list}", master.Men.Count, string.Join(", ", master.Men));
-        log.Information("Women List {women} {list}", master.Women.Count, string.Join(", ", master.Women));
-
-        var oa = new Overall(men, women, games);
-        Tour tour = new();
-        var players = Enumerable.Range(0, men).Select(i => new Player() {
-            Self = i,
-            OppoM = new int[men],
-            OppoW = new int[women]
-        }).ToArray();
-
-        return (tour, players);
+        if (result.IsSuccess) {
+            log.Information(DTour(result.Value.tour, $"{men}M/{women}W-{games}Games"));
+            log.Information("{dsp}", DPlayers(result.Value.players));
+        } else {
+            log.Error("{err}", result.Error);
+        }
     }
 
     #region create tour
 
-    #endregion
+    public Result<(Tour tour, Player[] players)> Pair(int men, int women, int games) {
 
-    #region master
-
-    public Master CreateMaster(int men, int women, int games) {
-        return new Master {
-            Men = [4, 1, 5, 5, 0, 3, 5, 2, 3, 2, 3, 0, 1, 5, 5, 2, 4, 5, 0, 3, 0, 0, 3, 4, 0, 4, 4, 4, 2, 3, 1, 1, 1, 1, 2, 2],
-            Women = [0, 5, 1, 5, 4, 3, 3, 1, 1, 0, 2, 5, 5, 4, 2, 1, 3, 4, 3, 5, 3, 5, 4, 1, 4, 0, 4, 0, 3, 2, 2, 2, 1, 0, 2, 0]
-        };
-
-        return new Master {
-            Men = NewMaster(men, games),
-            Women = NewMaster(women, games)
-        };
-
-    }
-
-    public List<int> NewMaster(int maxPlayers, int maxGames) {
-        List<int> list = [];
-        Random rd = new();
-        int n, maxPosition = maxPlayers * maxGames;
-
-        while (list.Count < maxPosition) {
-            n = rd.Next(maxPlayers);
-            if (list.Count(x => x == n) < maxGames) {
-                list.Add(n);
-            }
+        if (men == 0 || women == 0) {
+            return Result.Failure<(Tour, Player[])>("The number of both men and women players must not be 0.");
         }
 
-        return list;
+        var master = CreateMaster(men, women, games);
+        if (master.Men.Count != master.Women.Count) {
+            return Result.Failure<(Tour, Player[])>($"The number({master.Men.Count}) of men players must be equal to the number({master.Women.Count}) of women players.");
+        }
+
+        var tour = new Tour();
+        var oa = new Overall(men, women, games);
+        log.Debug("Overrall: men {m} women {w} games {g} maxCourts {m}", oa.Men, oa.Women, oa.Games, oa.MaxCt);
+        int count;
+
+        while ((count = master.Men.Count) > 0) {
+            var orgM = master.Men
+                .Select((d, i) => new Order(i, d))
+                .Where(x => !oa.Round.ContainsM(x.Person) && oa.Court.ContainM(x.Person));
+            var orgW = master.Women
+                .Select((d, i) => new Order(i, d))
+                .Where(x => !oa.Round.ContainsW(x.Person) && oa.Court.ContainW(x.Person));
+
+            var minPlayM = GetMinPlayed(orgM, oa.PlayerM);
+            var minPlayW = GetMinPlayed(orgW, oa.PlayerW);
+        }
+
+        return (tour, oa.PlayerM);
     }
+
+    #region create chose
+
+    public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
+        var quali = players.Where(p => list.Any(o => o.Person == p.Self));
+        var min = quali.Min(p => p.Played);
+        var minPlayed = quali.Where(p => p.Played == min);
+        var result = list.Where(o => minPlayed.Any(p => p.Self == o.Person));
+        return result.Any() ? result : list;
+    }
+
+    #endregion
+
+    #region update
+
+    public bool UpdateList(Overall oa, Master master) {
+        //var result = 
+        return true;
+    }
+
+    #endregion
 
     #endregion
 

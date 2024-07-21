@@ -8,6 +8,7 @@ public class Overall
     public int Men { get; set; }
     public int Women { get; set; }
     public int Games { get; set; }
+    public int MaxCt { get; set; }
 
     public Overall(int men, int women,int games)
     {
@@ -17,6 +18,10 @@ public class Overall
         Tour = new();
         Round = new();
         Court = new();
+        var min = Math.Min(men, women);
+        if (min > 0) {
+            MaxCt = min / 2;
+        }
     }
 
     public void CheckCourt()
