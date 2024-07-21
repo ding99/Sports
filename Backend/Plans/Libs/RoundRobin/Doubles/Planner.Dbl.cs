@@ -106,59 +106,58 @@ public partial class Planner {
 
     #region chose
     
-    public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
-        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Played);
-        Console.Write($" m({min})");
-        var minPlayeds = players.Where(p => list.Any(s => s.Person == p.Self) && p.Played == min);
-        Console.Write($" mP({minPlayeds.Count()})");
+    public static IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
+        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+        var min = quali.Min(p => p.Played);
+        var minPlayeds = quali.Where(p => p.Played == min);
         var result = list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
-        return result != null && result.Any() ? result : list;
+        return result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
-        if((ct.Players() & 1) == 0) {
+    public static IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
+        if ((ct.Players() & 1) == 0) {
             return list;
         }
         var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
-        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => p.Partners[psn]);
-        var minPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min);
-        var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
-        return result != null && result.Any() ? result : list;
+        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+        var min = quali.Min(p => p.Partners[psn]);
+        var minPlayers = quali.Where(p => p.Partners[psn] == min);
+        var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
+        return result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, Court ct) {
+    public static IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, Court ct) {
         if (ct.Players() < 2) {
             return list;
         }
-        var min = players.Where(p => list.Any(s => s.Person == p.Self)).Min(p => ct.Team1.Players.Min(c => p.Opponents[c]));
-        var minPLayers = players.Where(p => list.Any(s => s.Person == p.Self) && ct.Team1.Players.Any(c => p.Opponents[c] == min));
-        var result = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
-        return result != null && result.Any() ? result : list;
+        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+        var min = quali.Min(p => ct.Team1.Players.Min(c => p.Opponents[c]));
+        var minPlayers = quali.Where(p => ct.Team1.Players.Any(c => p.Opponents[c] == min));
+        var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
+        return result.Any() ? result : list;
     }
 
+    #region remove
     public IEnumerable<Order> GetMinPlusParted(IEnumerable<Order> list, Player[] players, Court ct) {
         if ((ct.Players() & 1) == 0) {
             return list;
         }
         var psn = ct.Players() == 1 ? ct.Team1.Players[0] : ct.Team2.Players[0];
-        var min = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self)).Min(p => p.Partners[psn]);
-        var minPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min);
+        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+        var min = quali.Where(p => p.Self != psn).Min(p => p.Partners[psn]);
+        var minPLayers = quali.Where(p => p.Self != psn && p.Partners[psn] == min);
         var selected = list.Where(i => minPLayers.Any(p => p.Self == i.Person));
 
         var minPlusPLayers = players.Where(p => p.Self != psn && list.Any(s => s.Person == p.Self) && p.Partners[psn] == min + 1);
         selected = selected.Concat(list.Where(i => minPlusPLayers.Any(p => p.Self == i.Person)));
 
-        return selected != null && selected.Any() ? selected : list;
+        return selected.Any() ? selected : list;
     }
+    #endregion
 
     #endregion
 
-    private bool Parted(Player[] players, Court ct, int p) {
-        return ct.Team1.Players.Count == 1 && players[ct.Team1.Players[0]].Partners[p] > 0
-            || ct.Team2.Players.Count == 1 && players[ct.Team2.Players[0]].Partners[p] > 0;
-    }
-
-    public bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
+    public static bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
         var result = orders?.Count() > 0;
         var groups = orders?.GroupBy(
             o => o.Person,
@@ -168,18 +167,18 @@ public partial class Planner {
             });
         var max = groups?.Max(g => g.Count);
         var group = groups?.First(g => g.Count == max);
-        var fst = orders?.First(o => o.Person == group?.Key);
+        var last = orders?.Last(o => o.Person == group?.Key);
 
         if (result is true) {
-            AddPlayer(oa, players, fst!.Person);
-            list.RemoveAt(fst.Index);
-            b.Append($" {fst.Person},");
+            AddPlayer(oa, players, last!.Person);
+            list.RemoveAt(last.Index);
+            b.Append($" {last.Person},");
         }
 
         return result;
     }
 
-    private void AddPlayer(Overall oa, Player[] players, int p) {
+    private static void AddPlayer(Overall oa, Player[] players, int p) {
         players[p].Played++;
         switch (oa.Court.Players()) {
         case 0:
@@ -231,11 +230,11 @@ public partial class Planner {
 
     public static List<int> CreateMaster(int maxPlayers, int maxGames) {
 
-        //last one
-        return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
+        ////last one
+        //return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
 
-        // 6 round
-        return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
+        //// 6 round
+        //return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
 
         #region random
         List<int> list = [];
