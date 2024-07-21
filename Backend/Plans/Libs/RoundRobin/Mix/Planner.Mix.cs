@@ -7,52 +7,29 @@ namespace Libs.RoundRobin.Mix;
 public partial class Planner {
 
     public void CreateMix(int men, int women, int games) {
-
-        Console.WriteLine("Create Mix");
-
-        var (tour, players, log) = Pair(men, women, games);
-        Console.ResetColor();
-        Console.WriteLine(log);
-
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine(DTour(tour, $"{men}M/{women}W-{games}Games"));
-
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(DPlayers(players));
-
+        var (tour, players) = Pair(men, women, games);
+        log.Information(DTour(tour, $"{men}M/{women}W-{games}Games"));
+        log.Information("{dsp}", DPlayers(players));
     }
 
-    public (Tour, Player[], string) Pair(int men, int women, int games) {
+    public (Tour, Player[]) Pair(int men, int women, int games) {
         var master = CreateMaster(men, women, games);
 
-        StringBuilder b = new();
+        log.Information("Men   List {men} {list}", master.Men.Count, string.Join(", ", master.Men));
+        log.Information("Women List {women} {list}", master.Women.Count, string.Join(", ", master.Women));
 
-        b.AppendLine($"Men List ({master.Men.Count}) {string.Join(", ", master.Men)}");
-        b.AppendLine($"Women List ({master.Women.Count}) {string.Join(", ", master.Women)}");
-
-        var (tour, players, dsp) = CreateTour(men, women, games, master);
-        b.Append(dsp);
-
-        return (tour, players, b.ToString());
-    }
-
-    #region create tour
-
-    public (Tour, Player[], string) CreateTour(int men, int women, int games, Master master) {
         var oa = new Overall(men, women, games);
         Tour tour = new();
-        StringBuilder b = new();
         var players = Enumerable.Range(0, men).Select(i => new Player() {
             Self = i,
             OppoM = new int[men],
             OppoW = new int[women]
         }).ToArray();
-        int count;
 
-        //TODO
-
-        return (tour, players, b.ToString());
+        return (tour, players);
     }
+
+    #region create tour
 
     #endregion
 
