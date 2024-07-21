@@ -18,9 +18,9 @@ public partial class Planner {
         //};
 
         log.Debug("Men   {men} [{ct}]", master.Men.Count, GroupMaster(master.Men));
-        log.Debug("  {list}", string.Join(", ", master.Men));
+        log.Debug("  {list}", string.Join(",", master.Men));
         log.Debug("Women {women} [{ct}]", master.Women.Count, GroupMaster(master.Women));
-        log.Debug("  {list}", string.Join(", ", master.Women));
+        log.Debug("  {list}", string.Join(",", master.Women));
 
         return master;
     }

@@ -7,7 +7,7 @@ namespace Libs.RoundRobin.Mix;
 
 public partial class Planner {
 
-    private static string DTour(Tour tour, string name) {
+    private string DTour(Tour tour, string name) {
         StringBuilder b = new($"-- Tour {name} (Rounds {tour.Rounds.Count})");
         b.AppendLine();
         b.AppendLine(string.Join(
@@ -37,11 +37,11 @@ public partial class Planner {
             b.AppendLine($" ({s.Partners.Sum()})");
 
             b.Append("Opponents: Men ");
-            b.Append(string.Join(", ", s.OppoSame.Select((v, i) => $"{i + 1}-{v}")));
+            b.Append(string.Join(",", s.OppoSame.Select((v, i) => $"{i + 1}-{v}")));
             b.Append($" ({s.OppoSame.Sum()})");
 
             b.Append("; Women ");
-            b.Append(string.Join(", ", s.OppoDiff.Select((v, i) => $"{i + 1}-{v}")));
+            b.Append(string.Join(",", s.OppoDiff.Select((v, i) => $"{i + 1}-{v}")));
             b.AppendLine($" ({s.OppoDiff.Sum()})");
         });
         return b.ToString();
