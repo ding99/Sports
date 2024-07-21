@@ -4,11 +4,13 @@ public class Player {
     public int Self { get; set; }
     public int Played { get; set; }
     public int[] Partners { get; set; }
-    public int[] Opponents { get; set; }
+    public int[] OppoM { get; set; }
+    public int[] OppoW { get; set; }
 
     public Player() {
         Partners = [];
-        Opponents = [];
+        OppoM = [];
+        OppoW = [];
     }
 }
 
@@ -17,3 +19,12 @@ public class Order(int index, int person) {
     public int Person { get; set; } = person;
 }
 
+public class Master {
+    public List<int> Men { get; set; }
+    public List<int> Women { get; set; }
+
+    public Master() {
+        Men = [];
+        Women = [];
+    }
+}

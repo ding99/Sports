@@ -5,11 +5,15 @@ public class Overall
     public Tour Tour { get; set; }
     public Round Round { get; set; }
     public Court Court { get; set; }
-    public int MaxCt { get; set; }
+    public int Men { get; set; }
+    public int Women { get; set; }
+    public int Games { get; set; }
 
-    public Overall(int maxCt)
+    public Overall(int men, int women,int games)
     {
-        MaxCt = maxCt;
+        Men = men;
+        Women = women;
+        Games = games;
         Tour = new();
         Round = new();
         Court = new();
@@ -19,7 +23,7 @@ public class Overall
     {
         if (Court.Players() == 4)
         {
-            if (Round.Courts.Count == MaxCt)
+            if (Round.Courts.Count == Games)
             {
                 Tour.Rounds.Add(Round.Clone());
                 Round = new() { Courts = [Court.Clone()] };
@@ -59,15 +63,20 @@ public class Round
         Courts = courts;
     }
 
-    public bool Contain(int player)
+    public bool ContainsM(int player)
     {
-        return Courts.Any(c => c.Contain(player));
+        return Courts.Any(c => c.ContainM(player));
+    }
+
+    public bool ContainsW(int player) {
+        return Courts.Any(c => c.ContainW(player));
     }
 
     public Round Clone()
     {
         return new Round { Courts = new(Courts) };
     }
+
 }
 
 public class Court
@@ -82,38 +91,47 @@ public class Court
         Team2 = team2;
     }
 
-    public bool Contain(int player)
+    public bool ContainM(int player)
     {
-        return Team1.Players.Contains(player) || Team2.Players.Contains(player);
+        return Team1.ContainsM(player) || Team2.ContainsM(player);
+    }
+
+    public bool ContainW(int player) {
+        return Team1.ContainsW(player) || Team2.ContainsW(player);
     }
 
     public int Players()
     {
-        return Team1.Players.Count + Team2.Players.Count;
+        return Team1.Players() + Team2.Players();
     }
 
     public Court Clone()
     {
         return new Court
         {
-            Team1 = new() { Players = new(Team1.Players) },
-            Team2 = new() { Players = new(Team2.Players) }
+            Team1 = new() { Man = Team1.Man, Woman = Team1.Woman },
+            Team2 = new() { Man = Team2.Man, Woman = Team2.Woman },
         };
     }
 }
 
 public class Team
 {
-    public List<int> Players { set; get; }
+    public int Man { set; get; }
+    public int Woman { set; get; }
 
-    public Team() { Players = []; }
-    public Team(List<int> players)
+    public Team() { Man = -1; Woman = -1; }
+
+    public int Players()
     {
-        Players = players;
+        return Man >= 0 ? 1 : 0 + Woman >= 0 ? 1 : 0;
     }
 
-    public bool Contain(int player)
-    {
-        return Players.Contains(player);
+    public bool ContainsM(int m) {
+        return Man == m;
+    }
+
+    public bool ContainsW(int w) {
+        return Woman == w;
     }
 }

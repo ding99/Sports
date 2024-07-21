@@ -2,11 +2,11 @@
 
 public partial class Planner {
 
-    public void StartMixed(int persons, int games) {
-        Console.WriteLine($"-- Round Robin Doubles: persons {persons}, games {games}");
+    public void StartMixed(int men, int women, int games) {
+        Console.WriteLine($"-- Round Robin Doubles: men {men}, women {women}, games {games}");
         Console.WriteLine();
 
-        CreateMix(persons, games);
+        CreateMix(men, women, games);
 
         Console.ResetColor();
     }
