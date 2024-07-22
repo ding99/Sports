@@ -10,8 +10,8 @@ public partial class Planner {
         var result = Pair(men, women, games);
 
         if (result.IsSuccess) {
-            log.Information(DTour(result.Value.Tour, $"{men}M/{women}W-{games}Games"));
-            log.Information("{dsp}", DPlayers(result.Value.PlayerM));
+            log.Information("{d}", DTour(result.Value.Tour, $"{men}M/{women}W-{games}Games"));
+            log.Information("{d}", DPlayers(result.Value.PlayerM));
         } else {
             log.Error("{err}", result.Error);
         }
@@ -42,11 +42,19 @@ public partial class Planner {
                 .Select((d, i) => new Order(i, d))
                 .Where(x => !oa.Round.ContainsW(x.Person) && !oa.Court.ContainW(x.Person));
 
-            listM = GetMinPlayed(listM, oa.PlayerM);
-            listW = GetMinPlayed(listW, oa.PlayerW);
+            listM = GetMinPlay(listM, oa.PlayerM);
+            listW = GetMinPlay(listW, oa.PlayerW);
 
             //TODO update
             UpdateList(oa, master, listM, listW);
+        }
+
+        if (oa.Court.Players() > 0) {
+            oa.Round.Courts.Add(oa.Court);
+        }
+
+        if (oa.Round.Courts.Count > 0) {
+            oa.Tour.Rounds.Add(oa.Round);
         }
 
         return oa;
@@ -54,7 +62,31 @@ public partial class Planner {
 
     #region create chose
 
-    public IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
+    public IEnumerable<Order> GetMinPlay(IEnumerable<Order> list, Player[] players) {
+        var quali = players.Where(p => list.Any(o => o.Person == p.Self));
+        var min = quali?.Min(p => p.Played);
+        var minPlayed = quali?.Where(p => p.Played == min);
+        var result = list.Where(o => minPlayed != null && minPlayed.Any(p => p.Self == o.Person));
+        return result.Any() ? result : list;
+    }
+
+    public IEnumerable<Order> GetMinPart(IEnumerable<Order> list, Player[] players) {
+        var quali = players.Where(p => list.Any(o => o.Person == p.Self));
+        var min = quali?.Min(p => p.Played);
+        var minPlayed = quali?.Where(p => p.Played == min);
+        var result = list.Where(o => minPlayed != null && minPlayed.Any(p => p.Self == o.Person));
+        return result.Any() ? result : list;
+    }
+
+    public IEnumerable<Order> GetMinOppoSame(IEnumerable<Order> list, Player[] players) {
+        var quali = players.Where(p => list.Any(o => o.Person == p.Self));
+        var min = quali?.Min(p => p.Played);
+        var minPlayed = quali?.Where(p => p.Played == min);
+        var result = list.Where(o => minPlayed != null && minPlayed.Any(p => p.Self == o.Person));
+        return result.Any() ? result : list;
+    }
+
+    public IEnumerable<Order> GetMinOppoDiff(IEnumerable<Order> list, Player[] players) {
         var quali = players.Where(p => list.Any(o => o.Person == p.Self));
         var min = quali?.Min(p => p.Played);
         var minPlayed = quali?.Where(p => p.Played == min);
@@ -64,27 +96,37 @@ public partial class Planner {
 
     #endregion
 
-    #region update
+    #region update list
 
-    public bool UpdateList(Overall oa, Master master, IEnumerable<Order> m, IEnumerable<Order> w) {
+    public void UpdateList(Overall oa, Master master, IEnumerable<Order> men, IEnumerable<Order> women) {
         //log.Information("- {mc} {m}", m.Count(), string.Join(",", m.Select(x => x.Person)));
         //log.Information("  {wc} {w}", w.Count(), string.Join(",", w.Select(x => x.Person)));
         //log.Debug("Master: M {m} W {w}", master.Men.Count, master.Women.Count);
 
-        var fstM = m.First();
-        if (fstM != null) {
-            AddMan(oa, fstM.Person);
-            master.Men.RemoveAt(fstM.Index);
+        int? times = null;
+        var minM = men.First();
+        var minW = women.First();
+
+        foreach (var m in men) {
+            foreach (var w in women) {
+                if (!times.HasValue || oa.PlayerM[m.Person].Partners[w.Person] < times) {
+                    times = oa.PlayerM[m.Person].Partners[w.Person];
+                    minM = m;
+                    minW = w;
+                }
+            }
         }
 
-        var fstW = w.First();
-        log.Debug("Rds {r}; Rd {cn}; Ct {ctn}. M ({mi}-{m}) W ({wi}-{w})", oa.Tour.Rounds.Count, oa.Round.Courts.Count, oa.Court.Players(), fstM?.Index, fstM?.Person, fstW?.Index, fstW?.Person);
-        if (fstW != null) {
-            AddWoman(oa, fstW.Person);
-            master.Women.RemoveAt(fstW.Index);
-        }
+        log.Debug("Rds {r} Rd {cn} Ct {ctn}, M({mi}-{m}) W({wi}-{w})", oa.Tour.Rounds.Count, oa.Round.Courts.Count, oa.Court.Players(), minM?.Index, minM?.Person, minW.Index, minW?.Person);
 
-        return fstM != null && fstW != null;
+        if (minM != null) {
+            AddMan(oa, minM.Person);
+            master.Men.RemoveAt(minM.Index);
+        }
+        if (minW != null) {
+            AddWoman(oa, minW.Person);
+            master.Women.RemoveAt(minW.Index);
+        }
     }
 
     public void AddMan(Overall oa, int p) {
@@ -129,7 +171,7 @@ public partial class Planner {
         }
     }
 
-    public void AddCourt(Overall oa) {
+    public static void AddCourt(Overall oa) {
         oa.Round.Courts.Add(new Court(oa.Court.Team1, oa.Court.Team2));
         oa.Court = new();
         if (oa.Round.Courts.Count == oa.MaxCt) {
