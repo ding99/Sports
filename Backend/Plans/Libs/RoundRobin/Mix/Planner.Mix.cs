@@ -45,7 +45,12 @@ public partial class Planner {
             listM = GetMinPlay(listM, oa.PlayerM);
             listW = GetMinPlay(listW, oa.PlayerW);
 
-            //TODO update
+            (listM, listW) = GetMinPart(oa, listM, listW);
+            log.Warning($"({listM.Count()} {listW.Count()})");
+
+            listM = GetMinOppo(oa, listM, true);
+            listW = GetMinOppo(oa, listW, false);
+
             UpdateList(oa, master, listM, listW);
         }
 
@@ -70,30 +75,65 @@ public partial class Planner {
         return result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinPart(IEnumerable<Order> list, Player[] players) {
-        var quali = players.Where(p => list.Any(o => o.Person == p.Self));
-        var min = quali?.Min(p => p.Played);
-        var minPlayed = quali?.Where(p => p.Played == min);
-        var result = list.Where(o => minPlayed != null && minPlayed.Any(p => p.Self == o.Person));
-        return result.Any() ? result : list;
+    public (IEnumerable<Order> ms, IEnumerable<Order> ws) GetMinPart(Overall oa, IEnumerable<Order> men, IEnumerable<Order> women) {
+        List<Order> minM = [];
+        List<Order> minW = [];
+        int? parts = null;
+
+        foreach (var m in men) {
+            foreach (var w in women) {
+                if (!parts.HasValue || oa.PlayerM[m.Person].Partners[w.Person] < parts) {
+                    parts = oa.PlayerM[m.Person].Partners[w.Person];
+                    minM = [new Order(m.Index, m.Person)];
+                    minW = [new Order(w.Index, w.Person)];
+                } else if (oa.PlayerM[m.Person].Partners[w.Person] == parts) {
+                    minM.Add(new Order(m.Index, m.Person));
+                    minW.Add(new Order(w.Index, w.Person));
+                }
+            }
+        }
+
+        return (Filter(minM), Filter(minW));
     }
 
-    public IEnumerable<Order> GetMinOppoSame(IEnumerable<Order> list, Player[] players) {
-        var quali = players.Where(p => list.Any(o => o.Person == p.Self));
-        var min = quali?.Min(p => p.Played);
-        var minPlayed = quali?.Where(p => p.Played == min);
-        var result = list.Where(o => minPlayed != null && minPlayed.Any(p => p.Self == o.Person));
-        return result.Any() ? result : list;
+    public List<Order> Filter(List<Order> list) {
+        return list.GroupBy(o => o.Index, (o, g) => g.First()).ToList();
     }
 
-    public IEnumerable<Order> GetMinOppoDiff(IEnumerable<Order> list, Player[] players) {
-        var quali = players.Where(p => list.Any(o => o.Person == p.Self));
-        var min = quali?.Min(p => p.Played);
-        var minPlayed = quali?.Where(p => p.Played == min);
-        var result = list.Where(o => minPlayed != null && minPlayed.Any(p => p.Self == o.Person));
-        return result.Any() ? result : list;
-    }
+    public IEnumerable<Order> GetMinOppo(Overall oa, IEnumerable<Order> list, bool man) {
+        if(oa.Court.Players() < 2) {
+            return list;
+        }
 
+        Player[] sames = man ? oa.PlayerM : oa.PlayerW;
+        Player[] diffs = man ? oa.PlayerW : oa.PlayerM;
+        int same = man ? oa.Court.Team1.Man : oa.Court.Team1.Woman;
+        int diff = man ? oa.Court.Team1.Woman : oa.Court.Team1.Man;
+
+        List<Order> midd = [];
+        int? ops = null;
+        foreach (var o in list) {
+            if (!ops.HasValue || sames[o.Person].OppoSame[same] + diffs[o.Person].OppoDiff[diff] < ops) {
+                ops = sames[o.Person].OppoSame[same] + diffs[o.Person].OppoDiff[diff];
+                midd = [new Order(o.Index, o.Person)];
+            } else if (sames[o.Person].OppoSame[same] + diffs[o.Person].OppoDiff[diff] == ops) {
+                midd.Add(new Order(o.Index, o.Person));
+            }
+        }
+
+        List<Order> mins = [];
+        ops = null;
+        foreach (var o in midd) {
+            if (!ops.HasValue || Math.Abs(sames[o.Person].OppoSame[same] - diffs[o.Person].OppoDiff[diff]) < ops) {
+                ops = Math.Abs(sames[o.Person].OppoSame[same] - diffs[o.Person].OppoDiff[diff]);
+                mins = [new Order(o.Index, o.Person)];
+            } else if (Math.Abs(sames[o.Person].OppoSame[same] - diffs[o.Person].OppoDiff[diff]) == ops) {
+                mins.Add(new Order(o.Index, o.Person));
+            }
+        }
+
+        return mins;
+    }
     #endregion
 
     #region update list
@@ -117,7 +157,7 @@ public partial class Planner {
             }
         }
 
-        log.Debug("Rds {r} Rd {cn} Ct {ctn}, M({mi}-{m}) W({wi}-{w})", oa.Tour.Rounds.Count, oa.Round.Courts.Count, oa.Court.Players(), minM?.Index, minM?.Person, minW.Index, minW?.Person);
+        log.Debug("({ms} {ws}) Rds {r} Rd {cn} Ct {ctn}, M({mi}-{m}) W({wi}-{w})", men.Count(), women.Count(), oa.Tour.Rounds.Count, oa.Round.Courts.Count, oa.Court.Players(), minM?.Index, minM?.Person, minW.Index, minW?.Person);
 
         if (minM != null) {
             AddMan(oa, minM.Person);
