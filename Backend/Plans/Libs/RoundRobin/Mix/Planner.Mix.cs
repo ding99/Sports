@@ -45,11 +45,11 @@ public partial class Planner {
             listM = GetMinPlay(listM, oa.PlayerM);
             listW = GetMinPlay(listW, oa.PlayerW);
 
-            (listM, listW) = GetMinPart(oa, listM, listW);
-            log.Warning($"({listM.Count()} {listW.Count()})");
-
             listM = GetMinOppo(oa, listM, true);
             listW = GetMinOppo(oa, listW, false);
+            log.Warning($"({listM.Count()} {listW.Count()})");
+
+            (listM, listW) = GetMinPart(oa, listM, listW);
 
             UpdateList(oa, master, listM, listW);
         }
@@ -113,10 +113,10 @@ public partial class Planner {
         List<Order> midd = [];
         int? ops = null;
         foreach (var o in list) {
-            if (!ops.HasValue || sames[o.Person].OppoSame[same] + diffs[o.Person].OppoDiff[diff] < ops) {
-                ops = sames[o.Person].OppoSame[same] + diffs[o.Person].OppoDiff[diff];
+            if (!ops.HasValue || sames[same].OppoSame[o.Person] + diffs[diff].OppoDiff[o.Person] < ops) {
+                ops = sames[same].OppoSame[o.Person] + diffs[diff].OppoDiff[o.Person];
                 midd = [new Order(o.Index, o.Person)];
-            } else if (sames[o.Person].OppoSame[same] + diffs[o.Person].OppoDiff[diff] == ops) {
+            } else if (sames[same].OppoSame[o.Person] + diffs[diff].OppoDiff[o.Person] == ops) {
                 midd.Add(new Order(o.Index, o.Person));
             }
         }
@@ -124,10 +124,10 @@ public partial class Planner {
         List<Order> mins = [];
         ops = null;
         foreach (var o in midd) {
-            if (!ops.HasValue || Math.Abs(sames[o.Person].OppoSame[same] - diffs[o.Person].OppoDiff[diff]) < ops) {
-                ops = Math.Abs(sames[o.Person].OppoSame[same] - diffs[o.Person].OppoDiff[diff]);
+            if (!ops.HasValue || Math.Abs(sames[same].OppoSame[o.Person] - diffs[diff].OppoDiff[o.Person]) < ops) {
+                ops = Math.Abs(sames[same].OppoSame[o.Person] - diffs[diff].OppoDiff[o.Person]);
                 mins = [new Order(o.Index, o.Person)];
-            } else if (Math.Abs(sames[o.Person].OppoSame[same] - diffs[o.Person].OppoDiff[diff]) == ops) {
+            } else if (Math.Abs(sames[same].OppoSame[o.Person] - diffs[diff].OppoDiff[o.Person]) == ops) {
                 mins.Add(new Order(o.Index, o.Person));
             }
         }
@@ -139,24 +139,8 @@ public partial class Planner {
     #region update list
 
     public void UpdateList(Overall oa, Master master, IEnumerable<Order> men, IEnumerable<Order> women) {
-        //log.Information("- {mc} {m}", m.Count(), string.Join(",", m.Select(x => x.Person)));
-        //log.Information("  {wc} {w}", w.Count(), string.Join(",", w.Select(x => x.Person)));
-        //log.Debug("Master: M {m} W {w}", master.Men.Count, master.Women.Count);
-
-        int? times = null;
         var minM = men.First();
         var minW = women.First();
-
-        foreach (var m in men) {
-            foreach (var w in women) {
-                if (!times.HasValue || oa.PlayerM[m.Person].Partners[w.Person] < times) {
-                    times = oa.PlayerM[m.Person].Partners[w.Person];
-                    minM = m;
-                    minW = w;
-                }
-            }
-        }
-
         log.Debug("({ms} {ws}) Rds {r} Rd {cn} Ct {ctn}, M({mi}-{m}) W({wi}-{w})", men.Count(), women.Count(), oa.Tour.Rounds.Count, oa.Round.Courts.Count, oa.Court.Players(), minM?.Index, minM?.Person, minW.Index, minW?.Person);
 
         if (minM != null) {

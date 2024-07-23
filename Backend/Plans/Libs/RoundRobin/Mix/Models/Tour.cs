@@ -148,7 +148,7 @@ public class Team
 
     public int Players()
     {
-        return Man >= 0 ? 1 : 0 + Woman >= 0 ? 1 : 0;
+        return (Man >= 0 ? 1 : 0) + (Woman >= 0 ? 1 : 0);
     }
 
     public bool ContainsM(int m) {
