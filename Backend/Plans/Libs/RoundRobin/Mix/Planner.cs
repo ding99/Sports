@@ -15,7 +15,8 @@ public partial class Planner {
 
     public void StartMixed(int men, int women, int games) {
         log.Information("Round Robin mix double: men {men}, women {women}, games {games}", men, women, games);
-        CreateMix(men, women, games);
+        //CreateMix(men, women, games);
+        Comp(men, women, games);
     }
 
 }
