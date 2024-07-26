@@ -6,6 +6,7 @@ namespace Libs.RoundRobin.Mix;
 public partial class Planner {
 
     public Master CreateMaster(int men, int women, int games) {
+        //fixed data for test
         //var master = new Master {
         //    Men = [3, 1, 2, 5, 0, 0, 5, 3, 1, 4, 5, 2, 5, 0, 2, 2, 2, 4, 1, 5, 2, 4, 0, 0, 5, 3, 0, 4, 1, 4, 4, 3, 1, 3, 1, 3],
         //    Women = [2, 2, 4, 1, 0, 1, 3, 0, 4, 5, 0, 3, 2, 5, 0, 1, 2, 3, 0, 4, 4, 5, 2, 2, 4, 5, 0, 3, 1, 5, 4, 3, 1, 1, 5, 3]
@@ -23,6 +24,43 @@ public partial class Planner {
         //log.Debug("  {list}", string.Join(",", master.Women));
 
         return master;
+    }
+
+    public Tour[] Tour66() {
+        return [
+            new Tour([ //10 C2
+                new Round([
+                    new Court(new Team(0,5), new Team(5,4)),
+                    new Court(new Team(2,3), new Team(4,2)),
+                    new Court(new Team(1,0), new Team(3,1))
+                ]),
+                new Round([
+                    new Court(new Team(0,3), new Team(2,5)),
+                    new Court(new Team(5,2), new Team(1,1)),
+                    new Court(new Team(4,4), new Team(3,0))
+                ]),
+                new Round([
+                    new Court(new Team(0,2), new Team(3,3)),
+                    new Court(new Team(2,4), new Team(1,5)),
+                    new Court(new Team(5,1), new Team(4,0))
+                ]),
+                new Round([
+                    new Court(new Team(0,4), new Team(4,1)),
+                    new Court(new Team(2,2), new Team(5,0)),
+                    new Court(new Team(3,5), new Team(1,3))
+                ]),
+                new Round([
+                    new Court(new Team(0,0), new Team(1,2)),
+                    new Court(new Team(3,4), new Team(2,1)),
+                    new Court(new Team(4,5), new Team(5,3))
+                ]),
+                new Round([
+                    new Court(new Team(0,1), new Team(2,0)),
+                    new Court(new Team(1,4), new Team(4,3)),
+                    new Court(new Team(3,2), new Team(5,5))
+                ]),
+            ])
+        ];
     }
 
     public string GroupMaster(List<int> players) {

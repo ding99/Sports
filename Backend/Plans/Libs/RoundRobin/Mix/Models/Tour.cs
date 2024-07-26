@@ -145,6 +145,7 @@ public class Team
     public int Woman { set; get; }
 
     public Team() { Man = -1; Woman = -1; }
+    public Team(int man, int woman) { Man = man; Woman = woman; }
 
     public int Players()
     {

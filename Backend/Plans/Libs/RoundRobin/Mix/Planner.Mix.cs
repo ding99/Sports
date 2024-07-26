@@ -7,54 +7,19 @@ namespace Libs.RoundRobin.Mix;
 
 public partial class Planner {
 
-    public void Comp(int men, int women, int games) {
-        int cn = 0, loop = 50000;
-        log.Information("loop {l}", loop);
-        for (int i = 0; i < loop; i++) {
-            if (i > 0 && i % 1000 == 0) {
-                log.Information("-- i {i}", i);
-            }
-            var result = CreateMix(men, women, games);
-
-            if (result.IsSuccess) {
-                var ps = result.Value.p;
-                var c3 = Count3(ps);
-                var c2 = Count2(ps);
-                var p2 = Part2(ps);
-                if (c3 < 1 && p2 < 1 && c2 < 12) {
-                    cn++;
-                    log.Information("-- {i,2}: C3 {c3} C2 {c2} P2 {p2}", cn, c3, c2, p2);
-                    log.Information("{d}", DTour(result.Value.t, $"{men}M/{women}W-{games}Games"));
-                    log.Information("{d}", DPlayers(result.Value.p));
-                }
-            }
-        }
-        log.Information("Sum {sum}", cn);
-    }
-
-    public Result<(Tour t, Player[] p)> CreateMix(int men, int women, int games) {
+    public Result<(Tour t, Player[] p)> CreateMix(int men, int women, int games, bool dsp = false) {
         var result = Pair(men, women, games);
 
         if (result.IsSuccess) {
-            //log.Information("{d}", DTour(result.Value.Tour, $"{men}M/{women}W-{games}Games"));
-            //log.Information("{d}", DPlayers(result.Value.PlayerM));
+            if (dsp) {
+                log.Information("{d}", DTour(result.Value.Tour, $"{men}M/{women}W-{games}Games"));
+                log.Information("{d}", DPlayers(result.Value.PlayerM));
+            }
             return (result.Value.Tour, result.Value.PlayerM);
         } else {
             log.Error("{err}", result.Error);
             return Result.Failure<(Tour, Player[])>(result.Error);
         }
-    }
-
-    public int Count3(Player[] ps) {
-        return ps.Sum(p => p.Partners.Count(o => o > 2) + p.OppoSame.Count(o => o > 2) + p.OppoDiff.Count(o => o > 2));
-    }
-
-    public int Count2(Player[] ps) {
-        return ps.Sum(p => p.OppoSame.Count(o => o > 1) + p.OppoDiff.Count(o => o > 1));
-    }
-
-    public int Part2(Player[] ps) {
-        return ps.Sum(p => p.Partners.Count(o => o > 1));
     }
 
     #region create tour

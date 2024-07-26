@@ -25,7 +25,8 @@ public class Caller {
         root.AddArgument(men);
         root.AddArgument(women);
         root.AddArgument(games);
-        root.SetHandler((m, w, g) => new Planner().StartMixed(m, w, g), men, women, games);
+        //root.SetHandler((m, w, g) => new Planner().StartMixed(m, w, g), men, women, games);
+        root.SetHandler((m, w, g) => new Planner().Select66(), men, women, games);
 
         var result = root.Invoke(args);
         Console.WriteLine($"Result: {result}");
