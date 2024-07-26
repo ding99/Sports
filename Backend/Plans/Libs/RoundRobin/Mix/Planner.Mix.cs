@@ -1,7 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 
 using Libs.RoundRobin.Mix.Models;
-using Microsoft.Extensions.Logging;
 
 namespace Libs.RoundRobin.Mix; 
 
@@ -17,7 +16,7 @@ public partial class Planner {
             }
             return (result.Value.Tour, result.Value.PlayerM);
         } else {
-            log.Error("{err}", result.Error);
+            //log.Error("Failed to create mix: {err}", result.Error);
             return Result.Failure<(Tour, Player[])>(result.Error);
         }
     }
@@ -39,32 +38,36 @@ public partial class Planner {
         //log.Debug("Overall: men {m} women {w} games {g} maxCourts {max}", oa.Men, oa.Women, oa.Games, oa.MaxCt);
         int count;
 
-        while ((count = master.Men.Count) > 0) {
-            var listM = master.Men
-                .Select((d, i) => new Order(i, d))
-                .Where(x => !oa.Round.ContainsM(x.Person) && !oa.Court.ContainM(x.Person));
-            var listW = master.Women
-                .Select((d, i) => new Order(i, d))
-                .Where(x => !oa.Round.ContainsW(x.Person) && !oa.Court.ContainW(x.Person));
+        try {
+            while ((count = master.Men.Count) > 0) {
+                var listM = master.Men
+                    .Select((d, i) => new Order(i, d))
+                    .Where(x => !oa.Round.ContainsM(x.Person) && !oa.Court.ContainM(x.Person));
+                var listW = master.Women
+                    .Select((d, i) => new Order(i, d))
+                    .Where(x => !oa.Round.ContainsW(x.Person) && !oa.Court.ContainW(x.Person));
 
-            listM = GetMinPlay(listM, oa.PlayerM);
-            listW = GetMinPlay(listW, oa.PlayerW);
+                listM = GetMinPlay(listM, oa.PlayerM);
+                listW = GetMinPlay(listW, oa.PlayerW);
 
-            listM = GetMinOppo(oa, listM, true);
-            listW = GetMinOppo(oa, listW, false);
-            //log.Warning($"({listM.Count()} {listW.Count()})");
+                listM = GetMinOppo(oa, listM, true);
+                listW = GetMinOppo(oa, listW, false);
+                //log.Warning($"({listM.Count()} {listW.Count()})");
 
-            (listM, listW) = GetMinPart(oa, listM, listW);
+                (listM, listW) = GetMinPart(oa, listM, listW);
 
-            UpdateList(oa, master, listM, listW);
-        }
+                UpdateList(oa, master, listM, listW);
+            }
 
-        if (oa.Court.Players() > 0) {
-            oa.Round.Courts.Add(oa.Court);
-        }
+            if (oa.Court.Players() > 0) {
+                oa.Round.Courts.Add(oa.Court);
+            }
 
-        if (oa.Round.Courts.Count > 0) {
-            oa.Tour.Rounds.Add(oa.Round);
+            if (oa.Round.Courts.Count > 0) {
+                oa.Tour.Rounds.Add(oa.Round);
+            }
+        } catch (Exception ex) {
+            return Result.Failure<Overall>(ex.Message);
         }
 
         return oa;
