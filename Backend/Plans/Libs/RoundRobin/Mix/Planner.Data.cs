@@ -25,7 +25,7 @@ public partial class Planner {
         return master;
     }
 
-    public Tour[] Tour66() {
+    public Tour[] Excellent66() {
         return [
             new Tour([ //10 C2
                 new Round([
@@ -34,14 +34,14 @@ public partial class Planner {
                     new Court(new Team(1,0), new Team(3,1))
                 ]),
                 new Round([
-                    new Court(new Team(0,3), new Team(2,5)),
                     new Court(new Team(5,2), new Team(1,1)),
-                    new Court(new Team(4,4), new Team(3,0))
+                    new Court(new Team(4,4), new Team(3,0)),
+                    new Court(new Team(0,3), new Team(2,5))
                 ]),
                 new Round([
+                    new Court(new Team(5,1), new Team(4,0)),
                     new Court(new Team(0,2), new Team(3,3)),
-                    new Court(new Team(2,4), new Team(1,5)),
-                    new Court(new Team(5,1), new Team(4,0))
+                    new Court(new Team(2,4), new Team(1,5))
                 ]),
                 new Round([
                     new Court(new Team(0,4), new Team(4,1)),
@@ -49,15 +49,54 @@ public partial class Planner {
                     new Court(new Team(3,5), new Team(1,3))
                 ]),
                 new Round([
-                    new Court(new Team(0,0), new Team(1,2)),
                     new Court(new Team(3,4), new Team(2,1)),
+                    new Court(new Team(4,5), new Team(5,3)),
+                    new Court(new Team(0,0), new Team(1,2))
+                ]),
+                new Round([
+                    new Court(new Team(3,2), new Team(5,5)),
+                    new Court(new Team(0,1), new Team(2,0)),
+                    new Court(new Team(1,4), new Team(4,3))
+                ])
+            ])
+        ];
+    }
+
+    //TODO correct data
+    public Tour[] Excellent65() {
+        return [
+            new Tour([ //6 C2
+                new Round([
+                    new Court(new Team(0,5), new Team(5,4)),
+                    new Court(new Team(1,0), new Team(3,1))
+                ]),
+                new Round([
+                    new Court(new Team(0,3), new Team(2,5)),
+                    new Court(new Team(4,4), new Team(3,0))
+                ]),
+                new Round([
+                    new Court(new Team(0,2), new Team(3,3)),
+                    new Court(new Team(5,1), new Team(4,0))
+                ]),
+                new Round([
+                    new Court(new Team(0,4), new Team(4,1)),
+                    new Court(new Team(3,5), new Team(1,3))
+                ]),
+                new Round([
+                    new Court(new Team(0,0), new Team(1,2)),
                     new Court(new Team(4,5), new Team(5,3))
                 ]),
                 new Round([
-                    new Court(new Team(0,1), new Team(2,0)),
-                    new Court(new Team(1,4), new Team(4,3)),
-                    new Court(new Team(3,2), new Team(5,5))
+                    new Court(new Team(0,4), new Team(4,1)),
+                    new Court(new Team(3,5), new Team(1,3))
                 ]),
+                new Round([
+                    new Court(new Team(0,0), new Team(1,2)),
+                    new Court(new Team(4,5), new Team(5,3))
+                ]),
+                new Round([
+                    new Court(new Team(3,2), new Team(5,5))
+                ])
             ])
         ];
     }
