@@ -12,10 +12,9 @@ public partial class Planner {
         //    Women = [2, 2, 4, 1, 0, 1, 3, 0, 4, 5, 0, 3, 2, 5, 0, 1, 2, 3, 0, 4, 4, 5, 2, 2, 4, 5, 0, 3, 1, 5, 4, 3, 1, 1, 5, 3]
         //};
 
-        int max = Math.Max(men, women) * games;
         var master = new Master {
-            Men = NewMaster(men, max),
-            Women = NewMaster(women, max)
+            Men = NewMaster(men, games),
+            Women = NewMaster(women, games)
         };
 
         //log.Debug("Men   {men} [{ct}]", master.Men.Count, GroupMaster(master.Men));

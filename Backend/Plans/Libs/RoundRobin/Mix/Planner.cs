@@ -20,13 +20,13 @@ public partial class Planner {
     }
 
     public void Select66() {
-        int men = 6, women = 6, games = 6;
+        int men = 6, women = 6, games = 36;
         log.Information("Round Robin mix double: men {men}, women {women}, games {games}", men, women, games);
         Chose66(men, women, games, 100);
     }
 
     public void Select65() {
-        int men = 6, women = 5, games = 6;
+        int men = 6, women = 5, games = 30;
         log.Information("Round Robin mix double: men {men}, women {women}, games {games}", men, women, games);
         Chose65(men, women, games, 100000);
     }

@@ -16,7 +16,7 @@ public partial class Planner {
             }
             return (result.Value.Tour, result.Value.PlayerM);
         } else {
-            //log.Error("Failed to create mix: {err}", result.Error);
+            log.Error("Failed to create mix: {err}", result.Error);
             return Result.Failure<(Tour, Player[])>(result.Error);
         }
     }
@@ -25,8 +25,8 @@ public partial class Planner {
 
     public Result<Overall> Pair(int men, int women, int games) {
 
-        if (men == 0 || women == 0) {
-            return Result.Failure<Overall>("The number of both men and women players must not be 0.");
+        if (games % men > 0 || games % women > 0) {
+            return Result.Failure<Overall>("Invalid games value.");
         }
 
         var master = CreateMaster(men, women, games);
@@ -34,7 +34,7 @@ public partial class Planner {
             return Result.Failure<Overall>($"The number({master.Men.Count}) of men players must be equal to the number({master.Women.Count}) of women players.");
         }
 
-        var oa = new Overall(men, women, games);
+        var oa = new Overall(men, women, games/men);
         //log.Debug("Overall: men {m} women {w} games {g} maxCourts {max}", oa.Men, oa.Women, oa.Games, oa.MaxCt);
         int count;
 

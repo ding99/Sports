@@ -7,7 +7,7 @@ public partial class Planner {
     #region loop 6-5
 
     public void Chose65(int men, int women, int games, int loop) {
-        int cn = 0, maxC2 = 15;
+        int cn = 0, maxC2 = 6;
         log.Information("loop {l}, maxC2 {max}", loop, maxC2);
         for (int i = 0; i < loop; i++) {
             if (i > 0 && i % 1000 == 0) {
@@ -20,7 +20,7 @@ public partial class Planner {
                 var c3 = Count3_65(ps);
                 var c2 = Count2_65(ps);
                 var p2 = Part2_65(ps);
-                if (c3 == 0 && c2 < maxC2 && p2 < 7) {
+                if (c3 < 1 && c2 < maxC2 && p2 < 1) {
                     cn++;
                     log.Information("-- {i,2}: C3 {c3} C2 {c2} P2 {p2}", cn, c3, c2, p2);
                     //log.Information("{i,2}: P2 {p2}", cn, p2);
