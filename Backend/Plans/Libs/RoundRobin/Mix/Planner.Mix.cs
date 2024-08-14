@@ -36,7 +36,6 @@ public partial class Planner {
         }
 
         var oa = new Overall(men, women, games/men);
-        //log.Debug("Overall: men {m} women {w} games {g} maxCourts {max}", oa.Men, oa.Women, oa.Games, oa.MaxCt);
         int count;
 
         try {
@@ -67,8 +66,8 @@ public partial class Planner {
             if (oa.Round.Courts.Count > 0) {
                 oa.Tour.Rounds.Add(oa.Round);
             }
-        } catch (Exception ex) {
-            return Result.Failure<Overall>(ex.Message);
+        } catch (Exception e) {
+            return Result.Failure<Overall>(e.Message);
         }
 
         return oa;

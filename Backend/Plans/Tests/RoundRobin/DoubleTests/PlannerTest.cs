@@ -98,7 +98,7 @@ public class PlannerTest {
 
     [Fact]
     public void UpdateListTest_Team1_Player0() {
-        var oa = new Overall(1) {
+        var oa = new Overall(1, 1) {
             Tour = new() {
                 Rounds = [
                 new Round ([new Court(new Team([1, 2]), new Team([3, 4]))]),
@@ -136,7 +136,7 @@ public class PlannerTest {
 
     [Fact]
     public void UpdateListTest_Team1_Player1() {
-        var oa = new Overall(1) {
+        var oa = new Overall(1, 1) {
             Tour = new() {
                 Rounds = [
                 new Round ([new Court(new Team([1, 2]), new Team([3, 4]))]),
@@ -174,7 +174,7 @@ public class PlannerTest {
 
     [Fact]
     public void UpdateListTest_Team2_Player0() {
-        var oa = new Overall(1) {
+        var oa = new Overall(1, 1) {
             Tour = new() {
                 Rounds = [
                 new Round ([new Court(new Team([1, 2]), new Team([3, 4]))]),
@@ -182,7 +182,7 @@ public class PlannerTest {
             ]
             },
             Round = new(),
-            Court = new() { Team1 = new([4,0]) }
+            Court = new() { Team1 = new([4, 0]) }
         };
         Player[] players = [
             new Player{ Self = 0, Played = 2, Partners = [0,0,0,0,1,1], Opponents = [0,0,0,1,1,0] },
@@ -208,7 +208,7 @@ public class PlannerTest {
 
     [Fact]
     public void UpdateListTest_Team2_Player1() {
-        var oa = new Overall(1) {
+        var oa = new Overall(6, 6) {
             Tour = new() {
                 Rounds = [
                 new Round ([new Court(new Team([1, 2]), new Team([3, 4]))]),

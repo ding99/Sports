@@ -18,7 +18,7 @@ public class Caller {
             );
         var games = new Argument<int>(
             name: "games",
-            description: "Input the number of games one player needs to play."
+            description: "Input the number of total games."
             );
 
         var root = new RootCommand("Plan a double round robin");

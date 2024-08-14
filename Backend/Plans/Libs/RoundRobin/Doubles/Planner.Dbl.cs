@@ -10,35 +10,72 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public void CreateDbl(int persons, int games) {
-        if ((persons * games) % 4 != 0) {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"persons*games should be multiple of 4!");
-            return;
+    public Result<(Tour t, Player[] p)> CreateDbl(int persons, int games, bool dsp = false) {
+        var result = Pair(persons, games);
+
+        if (result.IsSuccess) {
+            if (dsp) {
+                log.Information("{d}", DTour(result.Value.Tour, $"{persons}/{games}Games"));
+                log.Information("{d}", DPlayers(result.Value.Players));
+            }
+            return (result.Value.Tour, result.Value.Players);
+        } else {
+            log.Error("Failed to create double: {err}", result.Error);
+            return Result.Failure<(Tour, Player[])>(result.Error);
         }
-
-        var (tour, players) = Find(persons, games);
-
-        log.Information(DTour(tour, $"New_{persons}-{games}"));
-        log.Information(DPlayers(players));
     }
 
-    public (Tour, Player[]) Find(int maxPlayers, int maxGames) {
-        var master = CreateMaster(maxPlayers, maxGames);
+    public Result<Overall> Pair(int persons, int games) {
+        if (persons % games % 4 > 0) {
+            return Result.Failure<Overall>($"games {games} should be a multiple of persons {persons}!");
+        }
+
+        var master = CreateMaster(persons, games);
+
+        var oa = new Overall(persons, games);
+        int count;
+
+        try {
+            while ((count = master.Count) > 0) {
+
+                var list = master
+                    .Select((d, i) => new Order(i, d))
+                    .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person));
+
+                //TODO
+
+                // get min play
+                // get min oppo
+                // get min part
+            }
+
+            if (oa.Court.Players() > 0) {
+                oa.Round.Courts.Add(oa.Court);
+            }
+
+            if (oa.Round.Courts.Count > 0) {
+                oa.Tour.Rounds.Add(oa.Round);
+            }
+
+        } catch (Exception e) {
+            return Result.Failure<Overall>(e.Message);
+        }
 
         log.Information("List ({ct})  {list}", master.Count, string.Join(", ", master));
 
-        var (tour, players) = CreateTour(maxPlayers, master);
+        //var (tour, players) = CreateTour(persons, master);
 
-        return (tour, players);
+        //return (tour, players);
+
+        return oa;
     }
 
     #region create tour
 
     #region tour
 
-    public (Tour, Player[]) CreateTour(int maxPlayers, List<int> list) {
-        Overall oa = new(maxPlayers / 4);
+    public (Tour, Player[]) CreateTour(int maxPlayers, List<int> list, Overall oa) {
+        //Overall oa = new(maxPlayers / 4);
         var players = Enumerable.Range(0, maxPlayers).Select(i => new Player() {
             Self = i,
             Played = 0,
@@ -211,34 +248,6 @@ public partial class Planner {
             oa.Court = new();
             break;
         }
-    }
-
-    #endregion
-
-    #region master
-
-    public static List<int> CreateMaster(int maxPlayers, int maxGames) {
-
-        ////last one
-        //return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
-
-        //// 6 round
-        //return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
-
-        #region random
-        List<int> list = [];
-        Random rd = new();
-        int a, maxPosition = maxPlayers * maxGames;
-
-        while (list.Count < maxPosition) {
-            a = rd.Next(maxPlayers);
-            if (list.Count(x => x == a) < maxGames) {
-                list.Add(a);
-            }
-        }
-
-        return list;
-        #endregion
     }
 
     #endregion

@@ -5,14 +5,27 @@ public class Overall
     public Tour Tour { get; set; }
     public Round Round { get; set; }
     public Court Court { get; set; }
+    public int PlayersCount { get; set; }
+    public int GamesCount { get; set; }
     public int MaxCt { get; set; }
 
-    public Overall(int maxCt)
+    public Player[] Players { get; set; }
+    public IEnumerable<Order> Orders { get; set; }
+
+    public Overall(int playersCount, int games)
     {
-        MaxCt = maxCt;
+        PlayersCount = playersCount;
+        GamesCount = games;
         Tour = new();
         Round = new();
         Court = new();
+        Players = Enumerable.Range(0, playersCount).Select(i => new Player() {
+            Self = i,
+            Partners = new int[playersCount],
+            Opponents = new int[playersCount],
+        }).ToArray();
+        Orders = [];
+        MaxCt = playersCount / 4;
     }
 
     public void CheckCourt()
@@ -110,6 +123,10 @@ public class Team
     public Team(List<int> players)
     {
         Players = players;
+    }
+
+    public int Members() {
+        return Players.Count;
     }
 
     public bool Contain(int player)

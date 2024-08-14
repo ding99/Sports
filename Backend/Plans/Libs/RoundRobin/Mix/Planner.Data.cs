@@ -1,4 +1,5 @@
-﻿using Libs.RoundRobin.Mix.Models;
+﻿using Libs.RoundRobin.Commons;
+using Libs.RoundRobin.Mix.Models;
 
 
 namespace Libs.RoundRobin.Mix;
@@ -13,8 +14,8 @@ public partial class Planner {
         //};
 
         var master = new Master {
-            Men = NewMaster(men, games),
-            Women = NewMaster(women, games)
+            Men = Utils.NewMaster(men, games),
+            Women = Utils.NewMaster(women, games)
         };
 
         //log.Debug("Men   {men} [{ct}]", master.Men.Count, GroupMaster(master.Men));
@@ -106,26 +107,26 @@ public partial class Planner {
         return string.Join(", ", groups.Select(x => $"{x.Key}-{x.Count}"));
     }
 
-    public List<int> NewMaster(int players, int maxGames) {
-        List<int> list = [];
-        Random rd = new();
-        int rounds = maxGames / players, n;
+    //public List<int> NewMaster(int players, int maxGames) {
+    //    List<int> list = [];
+    //    Random rd = new();
+    //    int rounds = maxGames / players, n;
 
-        while (list.Count < rounds * players) {
-            n = rd.Next(players);
-            if (list.Count(x => x == n) < rounds) {
-                list.Add(n);
-            }
-        }
+    //    while (list.Count < rounds * players) {
+    //        n = rd.Next(players);
+    //        if (list.Count(x => x == n) < rounds) {
+    //            list.Add(n);
+    //        }
+    //    }
 
-        while (list.Count < maxGames) {
-            n = rd.Next(players);
-            if (list.Count(x => x == n) < rounds + 1) {
-                list.Add(n);
-            }
-        }
+    //    while (list.Count < maxGames) {
+    //        n = rd.Next(players);
+    //        if (list.Count(x => x == n) < rounds + 1) {
+    //            list.Add(n);
+    //        }
+    //    }
 
-        return list;
-    }
+    //    return list;
+    //}
 
 }
