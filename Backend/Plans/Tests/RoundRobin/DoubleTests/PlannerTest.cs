@@ -118,9 +118,8 @@ public class PlannerTest {
         ];
         IEnumerable<Order> orders = [new(0, 3), new(1, 0), new(1, 4), new(3, 5), new(4, 1), new(5, 0), new(6, 2), new(7, 2), new(8, 5), new(9, 4)];
         List<int> list = [3, 0, 4, 5, 1, 0, 2, 2, 5, 4];
-        StringBuilder b = new();
 
-        var result = Planner.UpdateList(oa, players, orders, list, b);
+        var result = Planner.UpdateList(oa, players, orders, list);
 
         result.Should().BeTrue();
 
@@ -157,9 +156,8 @@ public class PlannerTest {
         ];
         IEnumerable<Order> orders = [new(0, 3), new(1, 0), new(3, 5), new(4, 1), new(5, 0), new(6, 2), new(7, 2), new(8, 5)];
         List<int> list = [3, 0, 4, 5, 1, 0, 2, 2, 5];
-        StringBuilder b = new();
 
-        var result = Planner.UpdateList(oa, players, orders, list, b);
+        var result = Planner.UpdateList(oa, players, orders, list);
 
         result.Should().BeTrue();
 
@@ -196,9 +194,8 @@ public class PlannerTest {
         ];
         IEnumerable<Order> orders = [new(0, 3), new(2, 5), new(3, 1), new(5, 2), new(6, 2), new(7, 5)];
         List<int> list = [3, 4, 5, 1, 0, 2, 2, 5];
-        StringBuilder b = new();
 
-        var result = Planner.UpdateList(oa, players, orders, list, b);
+        var result = Planner.UpdateList(oa, players, orders, list);
 
         result.Should().BeTrue();
 
@@ -231,9 +228,8 @@ public class PlannerTest {
         ];
         IEnumerable<Order> orders = [new(0, 3), new(2, 1), new(4, 2), new(5, 2)];
         List<int> list = [3, 4, 1, 0, 2, 2, 5];
-        StringBuilder b = new();
 
-        var result = Planner.UpdateList(oa, players, orders, list, b);
+        var result = Planner.UpdateList(oa, players, orders, list);
 
         result.Should().BeTrue();
 

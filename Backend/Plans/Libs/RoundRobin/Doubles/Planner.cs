@@ -1,15 +1,23 @@
-﻿namespace Libs.RoundRobin.Doubles;
+﻿using Serilog;
+
+namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
+    private readonly Serilog.Core.Logger log;
+
+    public Planner() {
+        log = new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .WriteTo.Console()
+            .CreateLogger();
+    }
+
     public void StartDouble(int persons, int games) {
-        Console.WriteLine($"-- Round Robin Doubles: persons {persons}, games {games}");
-        Console.WriteLine();
+        log.Information("Round Robin doubles: persons {persons}, games {games}", persons, games);
 
         //ShowSample(persons);
         CreateDbl(persons, games);
-
-        Console.ResetColor();
     }
 
 }

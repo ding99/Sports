@@ -5,7 +5,7 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public static void ShowSample(int persons) {
+    public void ShowSample(int persons) {
 
         Tour? rr;
 
@@ -14,16 +14,12 @@ public partial class Planner {
             rr = GetSample10();
             break;
         default:
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"UnSupported players number {persons}!");
+            log.Information($"UnSupported players number {persons}!");
             return;
         }
 
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine(DTour(rr, $"Sample{persons}"));
-
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(DPlayers(STour(rr)));
+        log.Information(DTour(rr, $"Sample{persons}"));
+        log.Information(DPlayers(STour(rr)));
     }
 
 
