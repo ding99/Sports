@@ -21,9 +21,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RoundRobin", "RoundRobin", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DoubleTests", "Tests\RoundRobin\DoubleTests\DoubleTests.csproj", "{D6EF184A-2EDC-4001-92A9-BF5109EAE753}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mix", "Libs\RoundRobin\Mix\Mix.csproj", "{5A5C79B1-FB7F-4B66-8AA0-0596AB0ACC6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mix", "Libs\RoundRobin\Mix\Mix.csproj", "{5A5C79B1-FB7F-4B66-8AA0-0596AB0ACC6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanMix", "Apps\RoundRobin\PlanMix\PlanMix.csproj", "{C2094B5B-B7B8-45E7-ABCA-BFD91600D7EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlanMix", "Apps\RoundRobin\PlanMix\PlanMix.csproj", "{C2094B5B-B7B8-45E7-ABCA-BFD91600D7EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commons", "Libs\RoundRobin\Commons\Commons.csproj", "{919F52FC-A04A-4CC2-AF4A-D97AED6FD55A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{C2094B5B-B7B8-45E7-ABCA-BFD91600D7EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2094B5B-B7B8-45E7-ABCA-BFD91600D7EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2094B5B-B7B8-45E7-ABCA-BFD91600D7EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{919F52FC-A04A-4CC2-AF4A-D97AED6FD55A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{919F52FC-A04A-4CC2-AF4A-D97AED6FD55A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{919F52FC-A04A-4CC2-AF4A-D97AED6FD55A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{919F52FC-A04A-4CC2-AF4A-D97AED6FD55A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +70,7 @@ Global
 		{D6EF184A-2EDC-4001-92A9-BF5109EAE753} = {A3467C53-F32E-4414-9665-26D48F301165}
 		{5A5C79B1-FB7F-4B66-8AA0-0596AB0ACC6F} = {7F3DB10B-B137-490A-BF2B-05488751D6F4}
 		{C2094B5B-B7B8-45E7-ABCA-BFD91600D7EE} = {F517FFFD-38B1-4134-AFEB-ED3C5B7FCC3D}
+		{919F52FC-A04A-4CC2-AF4A-D97AED6FD55A} = {7F3DB10B-B137-490A-BF2B-05488751D6F4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {656E61D6-1D73-4B51-A097-590FA898A4F3}

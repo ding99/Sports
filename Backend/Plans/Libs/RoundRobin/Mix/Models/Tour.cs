@@ -10,6 +10,11 @@ public class Overall
     public int Games { get; set; }
     public int MaxCt { get; set; }
 
+    public Player[] PlayerM {  get; set; }
+    public IEnumerable<Order> OrderM { get; set; }
+    public Player[] PlayerW { get; set; }
+    public IEnumerable<Order> OrderW { get; set; }
+
     public Overall(int men, int women,int games)
     {
         Men = men;
@@ -22,6 +27,20 @@ public class Overall
         if (min > 0) {
             MaxCt = min / 2;
         }
+        PlayerM = Enumerable.Range(0, men).Select(i => new Player() {
+            Self = i,
+            Partners = new int[women],
+            OppoSame = new int[men],
+            OppoDiff = new int[women]
+        }).ToArray();
+        PlayerW = Enumerable.Range(0, women).Select(i => new Player() {
+            Self = i,
+            Partners = new int[men],
+            OppoSame = new int[women],
+            OppoDiff = new int[men]
+        }).ToArray();
+        OrderM = [];
+        OrderW = [];
     }
 
     public void CheckCourt()
@@ -126,10 +145,11 @@ public class Team
     public int Woman { set; get; }
 
     public Team() { Man = -1; Woman = -1; }
+    public Team(int man, int woman) { Man = man; Woman = woman; }
 
     public int Players()
     {
-        return Man >= 0 ? 1 : 0 + Woman >= 0 ? 1 : 0;
+        return (Man >= 0 ? 1 : 0) + (Woman >= 0 ? 1 : 0);
     }
 
     public bool ContainsM(int m) {

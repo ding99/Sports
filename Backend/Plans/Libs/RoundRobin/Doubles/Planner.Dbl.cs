@@ -1,50 +1,81 @@
 ﻿using System.Text;
 
+using CSharpFunctionalExtensions;
+
 using Libs.RoundRobin.Doubles.Models;
+using Serilog;
+
 
 namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public void CreateDbl(int persons, int games) {
-        if ((persons * games) % 4 != 0) {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"persons*games should be multiple of 4!");
-            return;
+    public Result<(Tour t, Player[] p)> CreateDbl(int persons, int games, bool dsp = false) {
+        var result = Pair(persons, games);
+
+        if (result.IsSuccess) {
+            if (dsp) {
+                log.Information("{d}", DTour(result.Value.Tour, $"{persons}/{games}Games"));
+                log.Information("{d}", DPlayers(result.Value.Players));
+            }
+            return (result.Value.Tour, result.Value.Players);
+        } else {
+            log.Error("Failed to create double: {err}", result.Error);
+            return Result.Failure<(Tour, Player[])>(result.Error);
         }
-
-        var (tour, players, log) = Find(persons, games);
-        Console.ResetColor();
-        Console.WriteLine(log);
-
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine(DTour(tour, $"New_{persons}-{games}"));
-
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(DPlayers(players));
     }
 
-    public (Tour, Player[], string) Find(int maxPlayers, int maxGames) {
-        var master = CreateMaster(maxPlayers, maxGames);
+    public Result<Overall> Pair(int persons, int games) {
+        if (persons % games % 4 > 0) {
+            return Result.Failure<Overall>($"games {games} should be a multiple of persons {persons}!");
+        }
 
-        StringBuilder b = new();
+        var master = CreateMaster(persons, games);
 
-        b.AppendLine($"List ({master.Count})  {string.Join(", ", master)}");
+        var oa = new Overall(persons, games);
+        int count;
 
-        Console.WriteLine(b.ToString());
+        try {
+            while ((count = master.Count) > 0) {
 
-        var (tour, players, dsp) = CreateTour(maxPlayers, master);
-        b.Append(dsp);
+                var list = master
+                    .Select((d, i) => new Order(i, d))
+                    .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person));
 
-        return (tour, players, b.ToString());
+                //TODO
+
+                // get min play
+                // get min oppo
+                // get min part
+            }
+
+            if (oa.Court.Players() > 0) {
+                oa.Round.Courts.Add(oa.Court);
+            }
+
+            if (oa.Round.Courts.Count > 0) {
+                oa.Tour.Rounds.Add(oa.Round);
+            }
+
+        } catch (Exception e) {
+            return Result.Failure<Overall>(e.Message);
+        }
+
+        log.Information("List ({ct})  {list}", master.Count, string.Join(", ", master));
+
+        //var (tour, players) = CreateTour(persons, master);
+
+        //return (tour, players);
+
+        return oa;
     }
 
     #region create tour
 
     #region tour
 
-    public (Tour, Player[], string) CreateTour(int maxPlayers, List<int> list) {
-        Overall oa = new(maxPlayers / 4);
+    public (Tour, Player[]) CreateTour(int maxPlayers, List<int> list, Overall oa) {
+        //Overall oa = new(maxPlayers / 4);
         var players = Enumerable.Range(0, maxPlayers).Select(i => new Player() {
             Self = i,
             Played = 0,
@@ -53,35 +84,31 @@ public partial class Planner {
         }).ToArray();
         int count;
 
-        StringBuilder b = new("Added");
+        log.Information("Added");
         while ((count = list.Count) > 0) {
             var unset = list
                 .Select((data, index) => new Order(index, data))
                 .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person));
 
             // min opponent
-            Console.ForegroundColor = ConsoleColor.White;
             unset = GetMinOppo(unset, players, oa.Court);
-            Console.Write($" Oppo {unset.Count()}");
+            log.Debug($" Oppo {count}", unset.Count());
 
             // min part
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
             unset = GetMinParted(unset, players, oa.Court);
-            Console.Write($" Part {unset.Count()}");
+            log.Debug($" Part {count}", unset.Count());
 
             // min play
-            Console.ForegroundColor = ConsoleColor.Yellow;
             unset = GetMinPlayed(unset, players);
-            Console.Write($" Play {unset.Count()}");
+            log.Debug($" Play {count}", unset.Count());
 
             // min+1 parted
             //Console.ForegroundColor = ConsoleColor.White;
             //unset = GetMinPlusParted(unset, players, oa.Court);
             //Console.Write($" Plus {unset.Count()}");
 
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine($" rounds ({oa.Tour.Rounds.Count}) courts ({oa.Round.Courts.Count}) players ({oa.Court.Players()})");
-            if (UpdateList(oa, players, unset, list, b)) {
+            log.Debug(" rounds ({rs}) courts ({cs}) players ({ps})", oa.Tour.Rounds.Count, oa.Round.Courts.Count, oa.Court.Players());
+            if (UpdateList(oa, players, unset, list)) {
                 continue;
             }
 
@@ -98,10 +125,9 @@ public partial class Planner {
             oa.CheckCourt();
         }
 
-        b.AppendLine($" ({b.ToString().Split(',').Length - 1})");
-        b.AppendLine($"Courts {oa.MaxCt}");
+        log.Debug("Courts {xax}", oa.MaxCt);
 
-        return (oa.Tour, players, b.ToString());
+        return (oa.Tour, players);
     }
 
     #region chose
@@ -157,7 +183,7 @@ public partial class Planner {
 
     #endregion
 
-    public static bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list, StringBuilder b) {
+    public static bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list) {
         var result = orders?.Count() > 0;
         var groups = orders?.GroupBy(
             o => o.Person,
@@ -172,7 +198,7 @@ public partial class Planner {
         if (result is true) {
             AddPlayer(oa, players, last!.Person);
             list.RemoveAt(last.Index);
-            b.Append($" {last.Person},");
+            Log.Debug(" {person},", last.Person);
         }
 
         return result;
@@ -222,34 +248,6 @@ public partial class Planner {
             oa.Court = new();
             break;
         }
-    }
-
-    #endregion
-
-    #region master
-
-    public static List<int> CreateMaster(int maxPlayers, int maxGames) {
-
-        ////last one
-        //return [1, 6, 1, 6, 5, 0, 5, 0, 0, 3, 2, 9, 7, 2, 6, 8, 0, 3, 9, 4, 3, 8, 2, 2, 5, 6, 4, 9, 8, 4, 1, 9, 6, 5, 6, 4, 0, 5, 7, 1, 9, 5, 8, 8, 3, 0, 2, 4, 3, 2, 1, 1, 3, 4, 8, 7, 9, 7, 7, 7];
-
-        //// 6 round
-        //return [3, 1, 6, 0, 8, 6, 3, 0, 5, 8, 9, 0, 0, 6, 3, 9, 9, 0, 1, 8, 1, 0, 7, 5, 6, 1, 6, 6, 9, 7, 5, 4, 1, 8, 8, 4, 9, 8, 4, 4, 9, 7, 1, 7, 3, 4, 4, 7, 3, 7, 5, 3, 2, 2, 5, 2, 2, 2, 2, 5];
-
-        #region random
-        List<int> list = [];
-        Random rd = new();
-        int a, maxPosition = maxPlayers * maxGames;
-
-        while (list.Count < maxPosition) {
-            a = rd.Next(maxPlayers);
-            if (list.Count(x => x == a) < maxGames) {
-                list.Add(a);
-            }
-        }
-
-        return list;
-        #endregion
     }
 
     #endregion
