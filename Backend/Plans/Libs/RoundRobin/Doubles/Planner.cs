@@ -1,5 +1,6 @@
 ﻿using Serilog;
 
+
 namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
@@ -16,8 +17,14 @@ public partial class Planner {
     public void StartDouble(int persons, int games) {
         log.Information("Round Robin doubles: persons {persons}, games {games}", persons, games);
 
-        //ShowSample(persons);
         CreateDbl(persons, games, true);
+    }
+
+    public void DisplaySamples(int persons, int games) {
+        log.Information("Round Robin Samples: persons {persons}, games {games}", persons, games);
+
+        //TODO
+        ShowSample(persons);
     }
 
 }

@@ -20,7 +20,7 @@ public partial class Planner {
         }
 
         string DTeam(Team t) {
-            return t.Players.Count > 1 ? $"{t.Players[0] + 1,2}-{t.Players[1] + 1,-2}" : t.Players[0].ToString();
+            return t.Members.Count > 1 ? $"{t.Members[0] + 1,2}-{t.Members[1] + 1,-2}" : t.Members[0].ToString();
         }
 
     }

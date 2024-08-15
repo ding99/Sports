@@ -97,36 +97,40 @@ public class Court
 
     public bool Contain(int player)
     {
-        return Team1.Players.Contains(player) || Team2.Players.Contains(player);
+        return Team1.Members.Contains(player) || Team2.Members.Contains(player);
     }
 
     public int Players()
     {
-        return Team1.Players.Count + Team2.Players.Count;
+        return Team1.Players() + Team2.Players();
     }
 
     public Court Clone()
     {
         return new Court
         {
-            Team1 = new() { Players = new(Team1.Players) },
-            Team2 = new() { Players = new(Team2.Players) }
+            Team1 = new() { Members = new(Team1.Members) },
+            Team2 = new() { Members = new(Team2.Members) }
         };
     }
 }
 
 public class Team
 {
-    public List<int> Players { set; get; }
+    public List<int> Members { set; get; }
 
-    public Team() { Players = []; }
-    public Team(List<int> players)
+    public Team() { Members = []; }
+    public Team(List<int> members)
     {
-        Players = players;
+        Members = members;
+    }
+
+    public int Players() {
+        return Members.Count;
     }
 
     public bool Contain(int player)
     {
-        return Players.Contains(player);
+        return Members.Contains(player);
     }
 }
