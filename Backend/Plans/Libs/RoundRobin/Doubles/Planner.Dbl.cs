@@ -34,7 +34,6 @@ public partial class Planner {
 
         if (dsp) {
             log.Information("({c}) {d}", master.Count, string.Join(',', master));
-            log.Information("{d}", DPlayers(oa.Players));
         }
 
         try {
@@ -44,12 +43,10 @@ public partial class Planner {
                     .Select((d, i) => new Order(i, d))
                     .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person));
 
-                log.Debug("  {count}", count);
-                //TODO
-
-                // get min play
-                // get min oppo
+                list = GetMinPlay(list, oa.Players);
+                list = GetMinOppo(list, oa);
                 // get min part
+                list = GetMinPart(list, oa);
 
                 UpdateList(oa, master, list);
             }
@@ -74,7 +71,75 @@ public partial class Planner {
     #region create tour
 
     #region chose
-    
+
+    public IEnumerable<Order> GetMinPlay(IEnumerable<Order> list, Player[] players) {
+        var quali = players.Where(p => list.Any(o => o.Person == p.Self));
+        var min = quali?.Min(p => p.Played);
+        var minPlayed = quali?.Where(p => p.Played == min);
+        var result = list.Where(o => minPlayed != null && minPlayed.Any(p => p.Self == o.Person));
+        return result.Any() ? result : list;
+    }
+
+    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Overall oa) {
+        if (oa.Court.Players() < 2) {
+            return list;
+        }
+
+        Player[] players = oa.Players;
+        var opp1 = oa.Court.Team1.Members[0];
+        var opp2 = oa.Court.Team1.Members[1];
+
+        List<Order> midd = [];
+        int? ops = null;
+        foreach (var o in list) {
+            if (!ops.HasValue || players[opp1].Opponents[o.Person] + players[opp2].Opponents[o.Person] < ops) {
+                ops = players[opp1].Opponents[o.Person] + players[opp2].Opponents[o.Person];
+                midd = [new Order(o.Index, o.Person)];
+            } else if (players[opp1].Opponents[o.Person] + players[opp2].Opponents[o.Person] == ops) {
+                midd.Add(new Order(o.Index, o.Person));
+            }
+        }
+
+        List<Order> mins = [];
+        ops = null;
+        foreach (var o in midd) {
+            if (!ops.HasValue || Math.Abs(players[opp1].Opponents[o.Person] - players[opp2].Opponents[o.Person]) < ops) {
+                ops = Math.Abs(players[opp1].Opponents[o.Person] - players[opp2].Opponents[o.Person]);
+                mins = [new Order(o.Index, o.Person)];
+            } else if (Math.Abs(players[opp1].Opponents[o.Person] - players[opp2].Opponents[o.Person]) == ops) {
+                mins.Add(new Order(o.Index, o.Person));
+            }
+        }
+
+        return mins;
+    }
+
+    public IEnumerable<Order> GetMinPart(IEnumerable<Order> list, Overall oa) {
+        if ((oa.Court.Players() & 1) < 1) {
+            return list;
+        }
+
+        List<Order> mins = [];
+        int? parts = null;
+        var psn = oa.Court.Players() == 1 ? oa.Court.Team1.Members[0] : oa.Court.Team2.Members[0];
+
+        foreach (var m in list) {
+            if (!parts.HasValue || oa.Players[m.Person].Partners[psn] < parts) {
+                parts = oa.Players[m.Person].Partners[psn];
+                mins = [new Order(m.Index, m.Person)];
+            } else if (oa.Players[m.Person].Partners[psn] == parts) {
+                mins.Add(new Order(m.Index, m.Person));
+            }
+        }
+
+        return mins.GroupBy(o => o.Index, (o, g) => g.First()).ToList();
+    }
+
+
+    #endregion
+
+    #region chose orig
+
     public static IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
         var quali = players.Where(p => list.Any(s => s.Person == p.Self));
         var min = quali.Min(p => p.Played);
@@ -95,7 +160,7 @@ public partial class Planner {
         return result.Any() ? result : list;
     }
 
-    public static IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Player[] players, Court ct) {
+    public static IEnumerable<Order> GetMinOppoOrg(IEnumerable<Order> list, Player[] players, Court ct) {
         if (ct.Players() < 2) {
             return list;
         }
