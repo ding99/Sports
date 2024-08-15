@@ -68,8 +68,6 @@ public partial class Planner {
         return oa;
     }
 
-    #region create tour
-
     #region chose
 
     public IEnumerable<Order> GetMinPlay(IEnumerable<Order> list, Player[] players) {
@@ -135,10 +133,9 @@ public partial class Planner {
         return mins.GroupBy(o => o.Index, (o, g) => g.First()).ToList();
     }
 
-
     #endregion
 
-    #region chose orig
+    #region orig
 
     public static IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
         var quali = players.Where(p => list.Any(s => s.Person == p.Self));
@@ -225,8 +222,6 @@ public partial class Planner {
             break;
         }
     }
-
-    #endregion
 
     #endregion
 
