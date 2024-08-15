@@ -27,6 +27,7 @@ public partial class Planner {
 
     private static string DPlayers(Player[] players) {
         StringBuilder b = new();
+        b.AppendLine();
         players.ToList().ForEach(s => {
             b.AppendLine($"-- {s.Self + 1} ({s.Played})");
 

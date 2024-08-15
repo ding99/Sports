@@ -1,17 +1,15 @@
-﻿using System.Text;
-
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
+using Serilog;
 
 using Libs.RoundRobin.Doubles.Models;
-using Serilog;
 
 
 namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public Result<(Tour t, Player[] p)> CreateDbl(int persons, int games, bool dsp = false) {
-        var result = Pair(persons, games);
+    public Result<(Tour t, Player[] p)> CreateDbl(int persons, int games, bool dsp) {
+        var result = Pair(persons, games, dsp);
 
         if (result.IsSuccess) {
             if (dsp) {
@@ -25,8 +23,8 @@ public partial class Planner {
         }
     }
 
-    public Result<Overall> Pair(int persons, int games) {
-        if (persons % games % 4 > 0) {
+    public Result<Overall> Pair(int persons, int games, bool dsp) {
+        if (games % (persons * 4) > 0) {
             return Result.Failure<Overall>($"games {games} should be a multiple of persons {persons}!");
         }
 
@@ -35,6 +33,11 @@ public partial class Planner {
         var oa = new Overall(persons, games);
         int count;
 
+        if (dsp) {
+            log.Information("({c}) {d}", master.Count, string.Join(',', master));
+            log.Information("{d}", DPlayers(oa.Players));
+        }
+
         try {
             while ((count = master.Count) > 0) {
 
@@ -42,11 +45,14 @@ public partial class Planner {
                     .Select((d, i) => new Order(i, d))
                     .Where(x => !oa.Round.Contain(x.Person) && !oa.Court.Contain(x.Person));
 
+                log.Debug("  {count}", count);
                 //TODO
 
                 // get min play
                 // get min oppo
                 // get min part
+
+                UpdateList(oa, master, list);
             }
 
             if (oa.Court.Players() > 0) {
@@ -58,7 +64,7 @@ public partial class Planner {
             }
 
         } catch (Exception e) {
-            return Result.Failure<Overall>(e.Message);
+            return Result.Failure<Overall>(e.Message + e.StackTrace);
         }
 
         log.Information("List ({ct})  {list}", master.Count, string.Join(", ", master));
@@ -108,7 +114,7 @@ public partial class Planner {
             //Console.Write($" Plus {unset.Count()}");
 
             log.Debug(" rounds ({rs}) courts ({cs}) players ({ps})", oa.Tour.Rounds.Count, oa.Round.Courts.Count, oa.Court.Players());
-            if (UpdateList(oa, players, unset, list)) {
+            if (UpdateListOrg(oa, players, unset, list)) {
                 continue;
             }
 
@@ -118,7 +124,7 @@ public partial class Planner {
         }
 
         if (list.Count == 1 && (oa.Court.Players() & 1) == 1) {
-            AddPlayer(oa, players, list.First());
+            AddPlayerOrg(oa, players, list.First());
         }
 
         if (oa.Court.Players() > 0 || oa.Round.Courts.Count > 0) {
@@ -183,7 +189,80 @@ public partial class Planner {
 
     #endregion
 
-    public static bool UpdateList(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list) {
+    public void UpdateList(Overall oa, List<int> master, IEnumerable<Order> list) {
+        var min = list.First();
+
+        if (min != null) {
+            AddPlayer(oa, min.Person);
+            master.RemoveAt(min.Index);
+        }
+
+        //var result = orders?.Count() > 0;
+        //var groups = orders?.GroupBy(
+        //    o => o.Person,
+        //    (baseO, os) => new {
+        //        Key = baseO,
+        //        Count = os.Count()
+        //    });
+        //var max = groups?.Max(g => g.Count);
+        //var group = groups?.First(g => g.Count == max);
+        //var last = orders?.Last(o => o.Person == group?.Key);
+
+        //if (result is true) {
+        //    AddPlayer(oa, players, last!.Person);
+        //    list.RemoveAt(last.Index);
+        //    Log.Debug(" {person},", last.Person);
+        //}
+
+        //return result;
+    }
+
+    private static void AddPlayer(Overall oa, int p) {
+        var self = oa.Players[p];
+        self.Played++;
+        switch (oa.Court.Players()) {
+        case 0:
+            oa.Court.Team1.Players.Add(p);
+            break;
+        case 1:
+            var part1 = oa.Players[oa.Court.Team1.Players[0]];
+            self.Partners[oa.Court.Team1.Players[0]]++;
+            part1.Partners[p]++;
+            oa.Court.Team1.Players.Add(p);
+            break;
+        case 2:
+            oa.Players[oa.Court.Team1.Players[0]].Opponents[p]++;
+            oa.Players[oa.Court.Team1.Players[1]].Opponents[p]++;
+            self.Opponents[oa.Court.Team1.Players[0]]++;
+            self.Opponents[oa.Court.Team1.Players[1]]++;
+            oa.Court.Team2.Players.Add(p);
+            break;
+        case 3:
+            oa.Players[oa.Court.Team1.Players[0]].Opponents[p]++;
+            oa.Players[oa.Court.Team1.Players[1]].Opponents[p]++;
+            var pter3 = oa.Players[oa.Court.Team2.Players[0]];
+            self.Partners[oa.Court.Team2.Players[0]]++;
+            self.Opponents[oa.Court.Team1.Players[0]]++;
+            self.Opponents[oa.Court.Team1.Players[1]]++;
+            pter3.Partners[p]++;
+            oa.Court.Team2.Players.Add(p);
+
+            #region add court
+            oa.Round.Courts.Add(new Court(oa.Court.Team1, oa.Court.Team2));
+            oa.Court = new();
+            if (oa.Round.Courts.Count == oa.MaxCt) {
+                oa.Tour.Rounds.Add(oa.Round.Clone());
+                oa.Round = new();
+            }
+            #endregion
+
+            break;
+        }
+    }
+
+    #region remove
+
+    public static bool UpdateListOrg(Overall oa, Player[] players, IEnumerable<Order>? orders, List<int> list) {
         var result = orders?.Count() > 0;
         var groups = orders?.GroupBy(
             o => o.Person,
@@ -196,7 +275,7 @@ public partial class Planner {
         var last = orders?.Last(o => o.Person == group?.Key);
 
         if (result is true) {
-            AddPlayer(oa, players, last!.Person);
+            AddPlayerOrg(oa, players, last!.Person);
             list.RemoveAt(last.Index);
             Log.Debug(" {person},", last.Person);
         }
@@ -204,7 +283,7 @@ public partial class Planner {
         return result;
     }
 
-    private static void AddPlayer(Overall oa, Player[] players, int p) {
+    private static void AddPlayerOrg(Overall oa, Player[] players, int p) {
         players[p].Played++;
         switch (oa.Court.Players()) {
         case 0:
@@ -249,6 +328,8 @@ public partial class Planner {
             break;
         }
     }
+
+    #endregion
 
     #endregion
 

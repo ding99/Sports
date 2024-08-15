@@ -17,7 +17,7 @@ public partial class Planner {
         log.Information("Round Robin doubles: persons {persons}, games {games}", persons, games);
 
         //ShowSample(persons);
-        CreateDbl(persons, games);
+        CreateDbl(persons, games, true);
     }
 
 }

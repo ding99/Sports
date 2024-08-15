@@ -125,10 +125,6 @@ public class Team
         Players = players;
     }
 
-    public int Members() {
-        return Players.Count;
-    }
-
     public bool Contain(int player)
     {
         return Players.Contains(player);
