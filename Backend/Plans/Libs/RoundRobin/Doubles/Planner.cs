@@ -21,24 +21,24 @@ public partial class Planner {
     }
 
     public void Select084() {
-        int persons = 8, games = 32, times = 30;
+        int persons = 8, games = 32, times = 30, max = 9;
 
-        log.Information("Round Robin double: players {p}, games {games}. times {times}", persons, games, times);
-        Chose8_4(persons, games, times);
+        //log.Information("Round Robin double: players {p}, games {games}. times {times}, maxC2 {max}", persons, games, times, max);
+        Chose(persons, games, times, max);
     }
 
     public void Select094() {
-        int persons = 9, games = 36, times = 30;
+        int persons = 9, games = 36, times = 200000, max = 10;
 
-        log.Information("Round Robin double: players {p}, games {games}. times {times}", persons, games, times);
-        Chose9_4(persons, games, times);
+        //log.Information("Round Robin double: players {p}, games {games}. times {times}, maxC2 {max}", persons, games, times, max);
+        Chose(persons, games, times, max);
     }
 
     public void Select104() {
-        int persons = 10, games = 40, times = 600;
+        int persons = 10, games = 40, times = 600, max = 9;
 
-        log.Information("Round Robin double: players {p}, games {games}. times {times}", persons, games, times);
-        Chose10_4(persons, games, times);
+        //log.Information("Round Robin double: players {p}, games {games}. times {times}, maxC2 {max}", persons, games, times, max);
+        Chose(persons, games, times, max);
     }
 
 

@@ -23,7 +23,7 @@ public class Caller {
         root.AddArgument(games);
         //root.SetHandler((p, g) => new Planner().StartDouble(p, g), players, games);
         //root.SetHandler((p, g) => new Planner().Select084(), players, games);
-        //root.SetHandler((p, g) => new Planner().Select94(), players, games);
+        //root.SetHandler((p, g) => new Planner().Select094(), players, games);
         root.SetHandler((p, g) => new Planner().Select104(), players, games);
 
         var result = root.Invoke(args);
