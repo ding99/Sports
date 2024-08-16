@@ -26,7 +26,7 @@ public partial class Planner {
     }
 
     public void Select094() {
-        int persons = 9, games = 36, times = 200000, max = 10;
+        int persons = 9, games = 36, times = 300000, max = 10;
         Chose(persons, games, times, max);
     }
 
