@@ -44,7 +44,7 @@ public partial class Planner {
         }
 
         int PlayedTeam(Team team, int n) {
-            return team.Players.Count(c => c == n);
+            return team.Members.Count(c => c == n);
         }
     }
     #endregion
@@ -64,7 +64,7 @@ public partial class Planner {
         return PartTeam(court.Team1, s, n) + PartTeam(court.Team2, s, n);
         
         int PartTeam(Team team, int s, int n) {
-            return s != n && team.Players.Contains(s) && team.Players.Contains(n) ? 1 : 0;
+            return s != n && team.Members.Contains(s) && team.Members.Contains(n) ? 1 : 0;
         }
     }
     #endregion
@@ -81,7 +81,7 @@ public partial class Planner {
             }
 
             int OppoCourt(Court court, int s, int n) {
-                return s != n && (court.Team1.Players.Contains(s) && court.Team2.Players.Contains(n) || court.Team1.Players.Contains(n) && court.Team2.Players.Contains(s)) ? 1 : 0;
+                return s != n && (court.Team1.Members.Contains(s) && court.Team2.Members.Contains(n) || court.Team1.Members.Contains(n) && court.Team2.Members.Contains(s)) ? 1 : 0;
             }
 
         }
@@ -96,7 +96,7 @@ public partial class Planner {
         return tour.Rounds.Max(r => r.Courts.Max(c => MaxCourt(c)));
 
         static int MaxCourt(Court court) {
-            return Math.Max(court.Team1.Players.Max(), court.Team2.Players.Max());
+            return Math.Max(court.Team1.Members.Max(), court.Team2.Members.Max());
         }
     }
 
