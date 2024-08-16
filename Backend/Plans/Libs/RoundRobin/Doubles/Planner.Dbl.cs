@@ -7,34 +7,33 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public Result<(Tour t, Player[] p)> CreateDbl(int persons, int games, bool dsp) {
+    public Result<(Tour t, Player[] p, string mst)> CreateDbl(int persons, int games, bool dsp) {
         var result = Pair(persons, games, dsp);
 
         if (result.IsSuccess) {
             if (dsp) {
-                log.Information("{d}", DTour(result.Value.Tour, $"{persons}/{games}Games"));
-                log.Information("{d}", DPlayers(result.Value.Players));
+                log.Information("{d}", DTour(result.Value.oall.Tour, $"{persons}/{games}Games"));
+                log.Information("{d}", DPlayers(result.Value.oall.Players));
             }
-            return (result.Value.Tour, result.Value.Players);
+            return (result.Value.oall.Tour, result.Value.oall.Players, result.Value.mst);
         } else {
             log.Error("Failed to create double: {err}", result.Error);
-            return Result.Failure<(Tour, Player[])>(result.Error);
+            return Result.Failure<(Tour, Player[], string)>(result.Error);
         }
     }
 
-    public Result<Overall> Pair(int persons, int games, bool dsp) {
+    public Result<(Overall oall, string mst)> Pair(int persons, int games, bool dsp) {
         if (games % (persons * 4) > 0) {
-            return Result.Failure<Overall>($"games {games} should be a multiple of persons {persons}!");
+            return Result.Failure<(Overall, string)>($"games {games} should be a multiple of persons {persons}!");
         }
 
-        var master = CreateMaster(persons, games, true);
+        //var master = CreateMaster(persons, games, true);
+        var master = CreateMaster(persons, games, false);
 
         var oa = new Overall(persons, games);
         int count;
 
-        if (dsp) {
-            log.Information("({c}) {d}", master.Count, string.Join(',', master));
-        }
+        string mst = $"({master.Count}) {string.Join(',', master)}";
 
         try {
             while ((count = master.Count) > 0) {
@@ -60,12 +59,14 @@ public partial class Planner {
             }
 
         } catch (Exception e) {
-            return Result.Failure<Overall>(e.Message + e.StackTrace);
+            return Result.Failure<(Overall, string)>(e.Message + e.StackTrace);
         }
 
-        log.Information("List ({ct})  {list}", master.Count, string.Join(", ", master));
+        if (dsp) {
+            log.Information("List ({ct})  {list}", master.Count, string.Join(", ", master));
+        }
 
-        return oa;
+        return (oa, mst);
     }
 
     #region chose
