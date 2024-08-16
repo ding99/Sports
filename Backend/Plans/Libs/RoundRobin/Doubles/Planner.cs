@@ -20,14 +20,20 @@ public partial class Planner {
         CreateDbl(persons, games, true);
     }
 
-    public void Select94() {
-        int persons = 9, games = 36;
-        int times = 50; // 200000;
-
-        log.Information("Round Robin double: players {p}, games {games}. times {times}", persons, games, times);
-        Chose94(persons, games, times);
+    public void Select084() {
+        int persons = 8, games = 32, times = 30, max = 9;
+        Chose(persons, games, times, max);
     }
 
+    public void Select094() {
+        int persons = 9, games = 36, times = 300000, max = 10;
+        Chose(persons, games, times, max);
+    }
+
+    public void Select104() {
+        int persons = 10, games = 40, times = 600, max = 9;
+        Chose(persons, games, times, max);
+    }
 
 
     public void DisplaySamples(int persons, int games) {
