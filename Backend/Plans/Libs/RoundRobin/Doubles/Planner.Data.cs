@@ -5,7 +5,7 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public static List<int> CreateMaster(int players, int games, bool sample = false) {
+    public static List<int> CreateMaster(int players, int games, bool sample) {
 
         if (sample) {
             switch (players) {

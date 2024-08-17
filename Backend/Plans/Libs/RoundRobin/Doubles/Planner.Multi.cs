@@ -48,7 +48,7 @@ public partial class Planner {
             if (i > 0 && i % 1000 == 0) {
                 log.Information("-- loop {i}", i);
             }
-            var result = CreateDbl(persons, games, false);
+            var result = CreateDbl(persons, games, false, false);
 
             if (result.IsSuccess) {
                 var ps = result.Value.p;

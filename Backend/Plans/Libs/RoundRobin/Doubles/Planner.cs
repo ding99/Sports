@@ -26,10 +26,10 @@ public partial class Planner {
 
     #region sub entries
 
-    public void SingleDouble(int persons, int games) {
-        log.Information("Round Robin doubles: persons {persons}, games {games}", persons, games);
+    public void SampleDouble(int persons, int games) {
+        log.Information("Round Robin double sample: persons {persons}, games {games}", persons, games);
 
-        CreateDbl(persons, games, true);
+        CreateDbl(persons, games, true, true);
     }
 
     public void MultiDouble(int persons, int games) {
@@ -75,10 +75,10 @@ public partial class Planner {
         log.Error("Not support {p}-player {g}-game case yet!", persons, games);
     }
 
-    public void SampleDouble(int persons, int games) {
-        log.Information("Round Robin double sample: persons {persons}, games {games}", persons, games);
+    public void SingleDouble(int persons, int games) {
+        log.Information("Round Robin doubles: persons {persons}, games {games}", persons, games);
 
-        CreateDbl(persons, games, true, true);
+        CreateDbl(persons, games, true, false);
     }
 
     #endregion
