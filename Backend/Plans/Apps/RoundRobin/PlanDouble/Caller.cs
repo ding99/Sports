@@ -18,11 +18,25 @@ public class Caller {
             description: "Input the number of total games."
             );
 
+        var sample = new Option<bool>(
+            ["-s",  "--sample"],
+            () => false,
+            "Return example data."
+            );
+        var multi = new Option<bool>(
+            ["-m", "--multi"],
+            () => false,
+            "Return multi results."
+            );
+
         var root = new RootCommand("Plan a double round robin");
         root.AddArgument(players);
         root.AddArgument(games);
-        //root.SetHandler((p, g) => new Planner().StartDouble(p, g), players, games);
-        root.SetHandler((p, g) => new Planner().Select054(), players, games);
+        root.AddOption(sample);
+        root.AddOption(multi);
+
+        root.SetHandler((p, g, s, m) => new Planner().Start(p, g, s, m), players, games, sample, multi);
+        //root.SetHandler((p, g) => new Planner().Select054(), players, games);
         //root.SetHandler((p, g) => new Planner().Select064(), players, games);
         //root.SetHandler((p, g) => new Planner().Select074(), players, games);
         //root.SetHandler((p, g) => new Planner().Select084(), players, games);
