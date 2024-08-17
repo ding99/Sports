@@ -9,6 +9,12 @@ public partial class Planner {
 
         if (sample) {
             switch (players) {
+            case 7:
+                if (games == 28) {  // 7 persons, 28 games
+                    List<int> e07_1 = [1, 3, 3, 4, 5, 2, 3, 1, 0, 4, 0, 5, 4, 1, 6, 4, 2, 3, 0, 2, 0, 5, 2, 1, 6, 6, 5, 6];
+                    return e07_1;
+                }
+                break;
             case 8:
                 if (games == 32) {  // 8 persons, 32 games
                     List<int> e08_1 = [7, 0, 5, 2, 5, 3, 6, 3, 1, 0, 2, 7, 2, 5, 4, 7, 7, 1, 0, 5, 4, 2, 3, 3, 6, 0, 6, 4, 4, 1, 1, 6];
