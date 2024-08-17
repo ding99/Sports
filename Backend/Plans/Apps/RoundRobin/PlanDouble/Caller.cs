@@ -35,13 +35,10 @@ public class Caller {
         root.AddOption(sample);
         root.AddOption(multi);
 
-        root.SetHandler((p, g, s, m) => new Planner().Start(p, g, s, m), players, games, sample, multi);
-        //root.SetHandler((p, g) => new Planner().Select054(), players, games);
-        //root.SetHandler((p, g) => new Planner().Select064(), players, games);
-        //root.SetHandler((p, g) => new Planner().Select074(), players, games);
-        //root.SetHandler((p, g) => new Planner().Select084(), players, games);
-        //root.SetHandler((p, g) => new Planner().Select094(), players, games);
-        //root.SetHandler((p, g) => new Planner().Select104(), players, games);
+        root.SetHandler(
+            (p, g, s, m) => new Planner().Start(p, g, s, m),
+            players, games, sample, multi
+            );
 
         var result = root.Invoke(args);
         Console.WriteLine($"Result: {result}");

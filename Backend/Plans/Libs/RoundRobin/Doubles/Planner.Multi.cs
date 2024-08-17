@@ -66,15 +66,15 @@ public partial class Planner {
         log.Information("Sum {sum}", cn);
     }
 
-    public int Count3(Player[] ps) {
+    public static int Count3(Player[] ps) {
         return ps.Sum(p => p.Partners.Count(o => o > 1) + p.Opponents.Count(o => o > 2));
     }
 
-    public int Oppo2(Player[] ps) {
+    public static int Oppo2(Player[] ps) {
         return ps.Sum(p => p.Opponents.Count(o => o > 1));
     }
 
-    public int Part2(Player[] ps) {
+    public static int Part2(Player[] ps) {
         return ps.Sum(p => p.Partners.Count(o => o > 1));
     }
 
