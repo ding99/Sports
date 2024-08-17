@@ -7,8 +7,8 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public Result<(Tour t, Player[] p, string mst)> CreateDbl(int persons, int games, bool dsp) {
-        var result = Pair(persons, games, dsp);
+    public Result<(Tour t, Player[] p, string mst)> CreateDbl(int persons, int games, bool dsp, bool sample = false) {
+        var result = Pair(persons, games, dsp, sample);
 
         if (result.IsSuccess) {
             if (dsp) {
@@ -22,13 +22,13 @@ public partial class Planner {
         }
     }
 
-    public Result<(Overall oall, string mst)> Pair(int persons, int games, bool dsp) {
+    public Result<(Overall oall, string mst)> Pair(int persons, int games, bool dsp, bool sample) {
         if (games % (persons * 4) > 0) {
             return Result.Failure<(Overall, string)>($"games {games} should be a multiple of persons {persons}!");
         }
 
         //var master = CreateMaster(persons, games, true);
-        var master = CreateMaster(persons, games, false);
+        var master = CreateMaster(persons, games, sample);
 
         var oa = new Overall(persons, games);
         int count;
@@ -44,7 +44,6 @@ public partial class Planner {
 
                 list = GetMinPlay(list, oa.Players);
                 list = GetMinOppo(list, oa);
-                // get min part
                 list = GetMinPart(list, oa);
 
                 UpdateList(oa, master, list);
@@ -138,36 +137,36 @@ public partial class Planner {
 
     #region orig
 
-    public static IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
-        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
-        var min = quali.Min(p => p.Played);
-        var minPlayeds = quali.Where(p => p.Played == min);
-        var result = list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
-        return result.Any() ? result : list;
-    }
+    //public static IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
+    //    var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+    //    var min = quali.Min(p => p.Played);
+    //    var minPlayeds = quali.Where(p => p.Played == min);
+    //    var result = list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
+    //    return result.Any() ? result : list;
+    //}
 
-    public static IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
-        if ((ct.Players() & 1) == 0) {
-            return list;
-        }
-        var psn = ct.Players() == 1 ? ct.Team1.Members[0] : ct.Team2.Members[0];
-        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
-        var min = quali.Min(p => p.Partners[psn]);
-        var minPlayers = quali.Where(p => p.Partners[psn] == min);
-        var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
-        return result.Any() ? result : list;
-    }
+    //public static IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
+    //    if ((ct.Players() & 1) == 0) {
+    //        return list;
+    //    }
+    //    var psn = ct.Players() == 1 ? ct.Team1.Members[0] : ct.Team2.Members[0];
+    //    var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+    //    var min = quali.Min(p => p.Partners[psn]);
+    //    var minPlayers = quali.Where(p => p.Partners[psn] == min);
+    //    var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
+    //    return result.Any() ? result : list;
+    //}
 
-    public static IEnumerable<Order> GetMinOppoOrg(IEnumerable<Order> list, Player[] players, Court ct) {
-        if (ct.Players() < 2) {
-            return list;
-        }
-        var quali = players.Where(p => list.Any(s => s.Person == p.Self));
-        var min = quali.Min(p => ct.Team1.Members.Min(c => p.Opponents[c]));
-        var minPlayers = quali.Where(p => ct.Team1.Members.Any(c => p.Opponents[c] == min));
-        var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
-        return result.Any() ? result : list;
-    }
+    //public static IEnumerable<Order> GetMinOppoOrg(IEnumerable<Order> list, Player[] players, Court ct) {
+    //    if (ct.Players() < 2) {
+    //        return list;
+    //    }
+    //    var quali = players.Where(p => list.Any(s => s.Person == p.Self));
+    //    var min = quali.Min(p => ct.Team1.Members.Min(c => p.Opponents[c]));
+    //    var minPlayers = quali.Where(p => ct.Team1.Members.Any(c => p.Opponents[c] == min));
+    //    var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
+    //    return result.Any() ? result : list;
+    //}
 
     #endregion
 

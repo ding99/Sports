@@ -5,6 +5,42 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
+    #region branch
+
+    public void Select054() {
+        int persons = 5, games = 20, times = 5, max = 21;
+        Chose(persons, games, times, max);
+    }
+
+    public void Select064() {
+        int persons = 6, games = 24, times = 30, max = 19;
+        Chose(persons, games, times, max);
+    }
+
+    public void Select074() {
+        int persons = 7, games = 28, times = 30, max = 15;
+        Chose(persons, games, times, max);
+    }
+
+    public void Select084() {
+        int persons = 8, games = 32, times = 30, max = 9;
+        Chose(persons, games, times, max);
+    }
+
+    public void Select094() {
+        int persons = 9, games = 36, times = 100, max = 11;
+        Chose(persons, games, times, max);
+    }
+
+    public void Select104() {
+        int persons = 10, games = 40, times = 600, max = 9;
+        Chose(persons, games, times, max);
+    }
+
+    #endregion
+
+    #region util
+
     public void Chose(int persons, int games, int loop, int max) {
         int cn = 0;
         log.Information("Round Robin double: players {p}, games {games}. times {times}, maxC2 {max}", persons, games, loop, max);
@@ -30,17 +66,15 @@ public partial class Planner {
         log.Information("Sum {sum}", cn);
     }
 
-    #region util
-
-    public int Count3(Player[] ps) {
+    public static int Count3(Player[] ps) {
         return ps.Sum(p => p.Partners.Count(o => o > 1) + p.Opponents.Count(o => o > 2));
     }
 
-    public int Oppo2(Player[] ps) {
+    public static int Oppo2(Player[] ps) {
         return ps.Sum(p => p.Opponents.Count(o => o > 1));
     }
 
-    public int Part2(Player[] ps) {
+    public static int Part2(Player[] ps) {
         return ps.Sum(p => p.Partners.Count(o => o > 1));
     }
 
