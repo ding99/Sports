@@ -20,6 +20,16 @@ public partial class Planner {
         CreateDbl(persons, games, true);
     }
 
+    public void Select054() {
+        int persons = 5, games = 20, times = 5, max = 21;
+        Chose(persons, games, times, max);
+    }
+
+    public void Select064() {
+        int persons = 6, games = 24, times = 30, max = 19;
+        Chose(persons, games, times, max);
+    }
+
     public void Select074() {
         int persons = 7, games = 28, times = 30, max = 15;
         Chose(persons, games, times, max);

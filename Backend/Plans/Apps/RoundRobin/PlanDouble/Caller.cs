@@ -22,7 +22,9 @@ public class Caller {
         root.AddArgument(players);
         root.AddArgument(games);
         //root.SetHandler((p, g) => new Planner().StartDouble(p, g), players, games);
-        root.SetHandler((p, g) => new Planner().Select074(), players, games);
+        root.SetHandler((p, g) => new Planner().Select054(), players, games);
+        //root.SetHandler((p, g) => new Planner().Select064(), players, games);
+        //root.SetHandler((p, g) => new Planner().Select074(), players, games);
         //root.SetHandler((p, g) => new Planner().Select084(), players, games);
         //root.SetHandler((p, g) => new Planner().Select094(), players, games);
         //root.SetHandler((p, g) => new Planner().Select104(), players, games);
