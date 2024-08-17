@@ -14,33 +14,73 @@ public partial class Planner {
             .CreateLogger();
     }
 
-    public void StartDouble(int persons, int games) {
+    public void Start(int persons, int games, bool sample, bool multi) {
+        if (sample) {
+            SampleDouble(persons, games);
+        } else if (multi) {
+            MultiDouble(persons, games);
+        } else {
+            SingleDouble(persons, games);
+        }
+    }
+
+    #region sub entries
+
+    public void SingleDouble(int persons, int games) {
         log.Information("Round Robin doubles: persons {persons}, games {games}", persons, games);
 
         CreateDbl(persons, games, true);
     }
 
-    public void Select084() {
-        int persons = 8, games = 32, times = 30, max = 9;
-        Chose(persons, games, times, max);
+    public void MultiDouble(int persons, int games) {
+        switch (persons) {
+        case 5:
+            if(games == 20) {
+                Select054();
+                return;
+            }
+            break;
+        case 6:
+            if (games == 24) {
+                Select064();
+                return;
+            }
+            break;
+        case 7:
+            if (games == 28) {
+                Select074();
+                return;
+            }
+            break;
+        case 8:
+            if (games == 32) {
+                Select084();
+                return;
+            }
+            break;
+        case 9:
+            if (games == 36) {
+                Select094();
+                return;
+            }
+            break;
+        case 10:
+            if (games == 40) {
+                Select104();
+                return;
+            }
+            break;
+        }
+
+        log.Error("Not support {p}-player {g}-game case yet!", persons, games);
     }
 
-    public void Select094() {
-        int persons = 9, games = 36, times = 100, max = 11;
-        Chose(persons, games, times, max);
+    public void SampleDouble(int persons, int games) {
+        log.Information("Round Robin double sample: persons {persons}, games {games}", persons, games);
+
+        CreateDbl(persons, games, true, true);
     }
 
-    public void Select104() {
-        int persons = 10, games = 40, times = 600, max = 9;
-        Chose(persons, games, times, max);
-    }
-
-
-    public void DisplaySamples(int persons, int games) {
-        log.Information("Round Robin Samples: persons {persons}, games {games}", persons, games);
-
-        //TODO
-        ShowSample(persons);
-    }
+    #endregion
 
 }
