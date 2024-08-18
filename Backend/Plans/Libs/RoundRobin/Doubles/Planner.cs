@@ -14,8 +14,10 @@ public partial class Planner {
             .CreateLogger();
     }
 
-    public void Start(int persons, int games, bool sample, bool multi) {
-        if (sample) {
+    public void Start(int persons, int games, bool sample, bool multi, bool review) {
+        if (review) {
+            ReviewTour(persons);
+        } else if (sample) {
             SampleDouble(persons, games);
         } else if (multi) {
             MultiDouble(persons, games);

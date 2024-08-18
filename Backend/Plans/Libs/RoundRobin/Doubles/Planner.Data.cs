@@ -16,9 +16,13 @@ public partial class Planner {
                 }
                 break;
             case 6:
-                if (games == 24) {  // 6 persons, 4 games
+                switch(games) {
+                case 24:  // 6 players, 4 games
                     List<int> e064_1 = [3, 3, 0, 3, 5, 2, 4, 0, 4, 4, 3, 4, 0, 5, 2, 1, 1, 0, 2, 1, 2, 1, 5, 5];
                     return e064_1;
+                case 36:  // 6 players, 6 games
+                    List<int> e066_1 = [1, 0, 3, 2, 5, 0, 5, 3, 1, 0, 1, 2, 2, 1, 2, 4, 4, 0, 0, 5, 1, 0, 3, 4, 5, 5, 4, 3, 3, 4, 1, 2, 4, 3, 2, 5];
+                    return e066_1;
                 }
                 break;
             case 7:
