@@ -52,22 +52,17 @@ public partial class Planner {
 
             if (result.IsSuccess) {
                 var ps = result.Value.p;
-                var c3 = Count3_04(ps);
                 var o2 = Oppo2_04(ps);
                 var p2 = Part2_04(ps);
-                if (c3 < 1 && o2 < max && p2 < 1) {
+                if (o2 < max && p2 < 1) {
                     log.Information("Master: {m}", result.Value.mst);
-                    log.Information("{i,2}: C3 {c3} O2 {o2} P2 {p2}", ++cn, c3, o2, p2);
-                    log.Information("{d}", DTour(result.Value.t, $"{persons}-{games}Games"));
+                    log.Information("{i,2}: O2 {o2} P2 {p2}", ++cn, o2, p2);
+                    log.Information("{d}", DTour(result.Value.t, $"{persons}-Player {games}-Game"));
                     log.Information("{d}", DPlayers(result.Value.p));
                 }
             }
         }
         log.Information("Sum {cn}", cn);
-    }
-
-    public static int Count3_04(Player[] ps) {
-        return ps.Sum(p => p.Partners.Count(o => o > 1) + p.Opponents.Count(o => o > 2));
     }
 
     public static int Oppo2_04(Player[] ps) {

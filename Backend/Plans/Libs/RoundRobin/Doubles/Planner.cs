@@ -75,7 +75,7 @@ public partial class Planner {
             }
             break;
         case 10:
-            if (games == 40) {
+            if (games == 4) {
                 Select104();
                 return;
             }
