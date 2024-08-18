@@ -17,9 +17,9 @@ public partial class Planner {
 
     #region util
 
-    public void Chose07(int persons, int games, int loop, int max) {
+    public void Chose07(int persons, int games, int loop, int maxOppo) {
         int cn = 0;
-        log.Information("Round Robin double: players {p}, games {games}. times {times}, maxC2 {max}", persons, games, loop, max);
+        log.Information("Round Robin double: players {p}, games {games}. times {times}, maxC2 {max}", persons, games, loop, maxOppo);
         for (int i = 0; i < loop; i++) {
             if (i > 0 && i % 1000 == 0) {
                 log.Information("-- loop {i}", i);
@@ -30,7 +30,7 @@ public partial class Planner {
                 var ps = result.Value.p;
                 var o3 = Oppo3_07(ps);
                 var p2 = Part2_07(ps);
-                if (o3 < max && p2 <= persons) {
+                if (o3 < maxOppo && p2 <= persons) {
                     log.Information("Master: {m}", result.Value.mst);
                     log.Information("{i,2}: O3 {o3} P2 {p2}", ++cn, o3, p2);
                     log.Information("{d}", DTour(result.Value.t, $"{persons}-Player {games}-Game"));

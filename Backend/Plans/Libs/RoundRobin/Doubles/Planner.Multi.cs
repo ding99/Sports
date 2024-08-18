@@ -4,7 +4,7 @@
 namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
-    public void Chose(int persons, int games, int loop, int maxOppo) {
+    public void Chose(int persons, int games, int loop, int maxPart, int maxOppo) {
         int cn = 0;
         log.Information("Round Robin double: players {p}, games {games}. times {times}, maxC2 {max}", persons, games, loop, maxOppo);
         for (int i = 0; i < loop; i++) {
@@ -15,11 +15,11 @@ public partial class Planner {
 
             if (result.IsSuccess) {
                 var ps = result.Value.p;
-                var o2 = OppoCount(ps);
-                var p2 = PartCount(ps);
-                if (o2 < maxOppo && p2 < 1) {
+                var parts = PartCount(ps);
+                var oppos = OppoCount(ps);
+                if (parts < maxPart && oppos < maxOppo) {
                     log.Information("Master: {m}", result.Value.mst);
-                    log.Information("{i,2}: Oppo {o2} Part {p2}", ++cn, o2, p2);
+                    log.Information("{i,2}: Oppo {o2} Part {p2}", ++cn, oppos, parts);
                     log.Information("{d}", DTour(result.Value.t, $"{persons}-Player {games}-Game"));
                     log.Information("{d}", DPlayers(result.Value.p));
                 }
