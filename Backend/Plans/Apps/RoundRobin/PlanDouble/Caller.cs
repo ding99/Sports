@@ -15,7 +15,7 @@ public class Caller {
             );
         var games = new Argument<int>(
             name: "games",
-            description: "Input the number of total games."
+            description: "Input the number of games each player plays."
             );
 
         var sample = new Option<bool>(

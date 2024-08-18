@@ -20,7 +20,7 @@ public partial class Planner {
 
         if (result.IsSuccess) {
             if (detail) {
-                log.Information("{d}", DTour(result.Value.oall.Tour, $"{persons}/{games}Games"));
+                log.Information("{d}", DTour(result.Value.oall.Tour, $"{persons}-Player {games}-Game"));
                 log.Information("{d}", DPlayers(result.Value.oall.Players));
             }
             return (result.Value.oall.Tour, result.Value.oall.Players, result.Value.mst);
@@ -31,16 +31,14 @@ public partial class Planner {
     }
 
     public Result<(Overall oall, string mst)> Pair(int persons, int games, bool detail, bool sample) {
-        if (games % persons > 0) {
-            return Result.Failure<(Overall, string)>($"games {games} should be a multiple of persons {persons}!");
-        }
-        if (games % 4 > 0) {
-            return Result.Failure<(Overall, string)>($"games {games} should be a multiple of 4!");
+        var totalGames = persons * games;
+        if (totalGames % 4 > 0) {
+            return Result.Failure<(Overall, string)>($"The number of total games {totalGames} should be a multiple of 4!");
         }
 
-        var master = CreateMaster(persons, games, sample);
+        var master = CreateMaster(persons, totalGames, sample);
 
-        var oa = new Overall(persons, games);
+        var oa = new Overall(persons, totalGames);
         int count;
 
         string mst = $"({master.Count}) {string.Join(',', master)}";

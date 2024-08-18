@@ -35,39 +35,39 @@ public partial class Planner {
     public void MultiDouble(int persons, int games) {
         switch (persons) {
         case 5:
-            if (games == 20) {
+            if (games == 4) {
                 Select054();
                 return;
             }
             break;
         case 6:
             switch(games){
-            case 24:
+            case 4:
                 Select064();
                 return;
-            case 36:
+            case 6:
                 Select066();
                 return;
             }
             break;
         case 7:
-            if (games == 28) {
+            if (games == 4) {
                 Select074();
                 return;
             }
             break;
         case 8:
             switch(games) {
-            case 32:
+            case 4:
                 Select084();
                 return;
-            //case 56:
+            //case 7:
             //    Select087();
             //    return;
             }
             break;
         case 9:
-            if (games == 36) {
+            if (games == 4) {
                 Select094();
                 return;
             }

@@ -2,7 +2,7 @@
   "profiles": {
     "PlanDouble": {
       "commandName": "Project",
-      "commandLineArgs": "5 20 -m"
+      "commandLineArgs": "9 4 -m -s"
     }
   }
 }
