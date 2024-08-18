@@ -25,21 +25,6 @@ public class Overall {
         Orders = [];
         MaxCt = playersCount / 4;
     }
-
-    //public void CheckCourt() {
-    //    if (Court.Players() == 4) {
-    //        if (Round.Courts.Count == MaxCt) {
-    //            Tour.Rounds.Add(Round.Clone());
-    //            Round = new() { Courts = [Court.Clone()] };
-    //        } else {
-    //            Round.Courts.Add(Court);
-    //        }
-    //    }
-
-    //    if (Round.Courts.Count > 0) {
-    //        Tour.Rounds.Add(Round);
-    //    }
-    //}
 }
 
 public class Tour {

@@ -5,7 +5,7 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    #region branch
+    #region 4 games
 
     public void Select054() {
         int persons = 5, games = 20, times = 5, max = 21;
@@ -39,6 +39,15 @@ public partial class Planner {
 
     #endregion
 
+    #region 6 games
+
+    public void Select066() {
+        int persons = 6, games = 36, times = 30, max = 19;
+        Chose(persons, games, times, max);
+    }
+
+    #endregion
+
     #region util
 
     public void Chose(int persons, int games, int loop, int max) {
@@ -63,7 +72,7 @@ public partial class Planner {
                 }
             }
         }
-        log.Information("Sum {sum}", cn);
+        log.Information("Sum {cn}", cn);
     }
 
     public static int Count3(Player[] ps) {

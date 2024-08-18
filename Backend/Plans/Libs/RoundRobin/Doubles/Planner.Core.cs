@@ -31,8 +31,11 @@ public partial class Planner {
     }
 
     public Result<(Overall oall, string mst)> Pair(int persons, int games, bool detail, bool sample) {
-        if (games % (persons * 4) > 0) {
+        if (games % persons > 0) {
             return Result.Failure<(Overall, string)>($"games {games} should be a multiple of persons {persons}!");
+        }
+        if (games % 4 > 0) {
+            return Result.Failure<(Overall, string)>($"games {games} should be a multiple of 4!");
         }
 
         var master = CreateMaster(persons, games, sample);
