@@ -7,7 +7,7 @@ namespace Libs.RoundRobin.Doubles;
 public partial class Planner {
 
     private static string DTour(Tour tour, string name) {
-        StringBuilder b = new($"-- Tour {name} (Rounds {tour.Rounds.Count})");
+        StringBuilder b = new($"-- Tour {name} {tour.Rounds.Count}-Round");
         b.AppendLine();
         b.AppendLine(string.Join(
             Environment.NewLine,

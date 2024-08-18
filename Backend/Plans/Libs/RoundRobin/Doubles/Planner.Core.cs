@@ -7,12 +7,20 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public Result<(Tour t, Player[] p, string mst)> CreateDbl(int persons, int games, bool dsp, bool sample = false) {
-        var result = Pair(persons, games, dsp, sample);
+    /// <summary>
+    /// Create a double tournament
+    /// </summary>
+    /// <param name="persons">Number of players</param>
+    /// <param name="games">Number of person-time</param>
+    /// <param name="detail">Show details in log</param>
+    /// <param name="sample">Sample tournament</param>
+    /// <returns></returns>
+    public Result<(Tour t, Player[] p, string mst)> CreateDbl(int persons, int games, bool detail, bool sample) {
+        var result = Pair(persons, games, detail, sample);
 
         if (result.IsSuccess) {
-            if (dsp) {
-                log.Information("{d}", DTour(result.Value.oall.Tour, $"{persons}/{games}Games"));
+            if (detail) {
+                log.Information("{d}", DTour(result.Value.oall.Tour, $"{persons}-Player {games}-Game"));
                 log.Information("{d}", DPlayers(result.Value.oall.Players));
             }
             return (result.Value.oall.Tour, result.Value.oall.Players, result.Value.mst);
@@ -22,15 +30,15 @@ public partial class Planner {
         }
     }
 
-    public Result<(Overall oall, string mst)> Pair(int persons, int games, bool dsp, bool sample) {
-        if (games % (persons * 4) > 0) {
-            return Result.Failure<(Overall, string)>($"games {games} should be a multiple of persons {persons}!");
+    public Result<(Overall oall, string mst)> Pair(int persons, int games, bool detail, bool sample) {
+        var totalGames = persons * games;
+        if (totalGames % 4 > 0) {
+            return Result.Failure<(Overall, string)>($"The number of total games {totalGames} should be a multiple of 4!");
         }
 
-        //var master = CreateMaster(persons, games, true);
-        var master = CreateMaster(persons, games, sample);
+        var master = CreateMaster(persons, totalGames, sample);
 
-        var oa = new Overall(persons, games);
+        var oa = new Overall(persons, totalGames);
         int count;
 
         string mst = $"({master.Count}) {string.Join(',', master)}";
@@ -61,7 +69,7 @@ public partial class Planner {
             return Result.Failure<(Overall, string)>(e.Message + e.StackTrace);
         }
 
-        if (dsp) {
+        if (detail) {
             log.Information("List ({ct})  {list}", master.Count, string.Join(", ", master));
         }
 
@@ -70,7 +78,7 @@ public partial class Planner {
 
     #region chose
 
-    public IEnumerable<Order> GetMinPlay(IEnumerable<Order> list, Player[] players) {
+    public static IEnumerable<Order> GetMinPlay(IEnumerable<Order> list, Player[] players) {
         var quali = players.Where(p => list.Any(o => o.Person == p.Self));
         var min = quali?.Min(p => p.Played);
         var minPlayed = quali?.Where(p => p.Played == min);
@@ -78,7 +86,7 @@ public partial class Planner {
         return result.Any() ? result : list;
     }
 
-    public IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Overall oa) {
+    public static IEnumerable<Order> GetMinOppo(IEnumerable<Order> list, Overall oa) {
         if (oa.Court.Players() < 2) {
             return list;
         }
@@ -112,7 +120,7 @@ public partial class Planner {
         return mins;
     }
 
-    public IEnumerable<Order> GetMinPart(IEnumerable<Order> list, Overall oa) {
+    public static IEnumerable<Order> GetMinPart(IEnumerable<Order> list, Overall oa) {
         if ((oa.Court.Players() & 1) < 1) {
             return list;
         }
@@ -135,44 +143,9 @@ public partial class Planner {
 
     #endregion
 
-    #region orig
-
-    //public static IEnumerable<Order> GetMinPlayed(IEnumerable<Order> list, Player[] players) {
-    //    var quali = players.Where(p => list.Any(s => s.Person == p.Self));
-    //    var min = quali.Min(p => p.Played);
-    //    var minPlayeds = quali.Where(p => p.Played == min);
-    //    var result = list.Where(i => minPlayeds.Any(p => p.Self == i.Person));
-    //    return result.Any() ? result : list;
-    //}
-
-    //public static IEnumerable<Order> GetMinParted(IEnumerable<Order> list, Player[] players, Court ct) {
-    //    if ((ct.Players() & 1) == 0) {
-    //        return list;
-    //    }
-    //    var psn = ct.Players() == 1 ? ct.Team1.Members[0] : ct.Team2.Members[0];
-    //    var quali = players.Where(p => list.Any(s => s.Person == p.Self));
-    //    var min = quali.Min(p => p.Partners[psn]);
-    //    var minPlayers = quali.Where(p => p.Partners[psn] == min);
-    //    var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
-    //    return result.Any() ? result : list;
-    //}
-
-    //public static IEnumerable<Order> GetMinOppoOrg(IEnumerable<Order> list, Player[] players, Court ct) {
-    //    if (ct.Players() < 2) {
-    //        return list;
-    //    }
-    //    var quali = players.Where(p => list.Any(s => s.Person == p.Self));
-    //    var min = quali.Min(p => ct.Team1.Members.Min(c => p.Opponents[c]));
-    //    var minPlayers = quali.Where(p => ct.Team1.Members.Any(c => p.Opponents[c] == min));
-    //    var result = list.Where(i => minPlayers.Any(p => p.Self == i.Person));
-    //    return result.Any() ? result : list;
-    //}
-
-    #endregion
-
     #region util
 
-    public void UpdateList(Overall oa, List<int> master, IEnumerable<Order> list) {
+    public static void UpdateList(Overall oa, List<int> master, IEnumerable<Order> list) {
         var min = list.First();
         if (min != null) {
             AddPlayer(oa, min.Person);
@@ -180,7 +153,7 @@ public partial class Planner {
         }
     }
 
-    private void AddPlayer(Overall oa, int p) {
+    private static void AddPlayer(Overall oa, int p) {
         var self = oa.Players[p];
         self.Played++;
         switch (oa.Court.Players()) {
