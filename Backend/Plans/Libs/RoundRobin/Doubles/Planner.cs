@@ -63,9 +63,9 @@ public partial class Planner {
             case 4:
                 Select084();
                 return;
-            //case 7:
-            //    Select087();
-            //    return;
+            case 7:
+                Select087();
+                return;
             }
             break;
         case 9:

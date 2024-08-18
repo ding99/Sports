@@ -32,9 +32,13 @@ public partial class Planner {
                 }
                 break;
             case 8:
-                if (games == 32) {  // 8 persons, 4 games
+                switch (games) {
+                case 32:  // 8 persons, 4 games
                     List<int> e084_1 = [7, 0, 5, 2, 5, 3, 6, 3, 1, 0, 2, 7, 2, 5, 4, 7, 7, 1, 0, 5, 4, 2, 3, 3, 6, 0, 6, 4, 4, 1, 1, 6];
                     return e084_1;
+                case 56:  // 8 persons, 7 games
+                    List<int> e087_1 = [6, 0, 1, 4, 4, 3, 7, 5, 6, 6, 0, 7, 0, 4, 5, 1, 7, 1, 7, 7, 3, 7, 6, 4, 2, 4, 1, 3, 3, 3, 3, 4, 5, 3, 5, 4, 0, 7, 6, 0, 2, 1, 5, 0, 5, 2, 1, 2, 2, 5, 6, 6, 2, 0, 2, 1];
+                    return e087_1;
                 }
                 break;
             case 9:
