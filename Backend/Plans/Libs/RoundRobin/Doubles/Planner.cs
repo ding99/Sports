@@ -14,8 +14,10 @@ public partial class Planner {
             .CreateLogger();
     }
 
-    public void Start(int persons, int games, bool sample, bool multi) {
-        if (sample) {
+    public void Start(int persons, int games, bool sample, bool multi, bool review) {
+        if (review) {
+            ReviewTour(persons);
+        } else if (sample) {
             SampleDouble(persons, games);
         } else if (multi) {
             MultiDouble(persons, games);
@@ -26,46 +28,54 @@ public partial class Planner {
 
     #region sub entries
 
-    public void SingleDouble(int persons, int games) {
-        log.Information("Round Robin doubles: persons {persons}, games {games}", persons, games);
+    public void SampleDouble(int persons, int games) {
+        log.Information("Round Robin double sample: persons {persons}, games {games}", persons, games);
 
-        CreateDbl(persons, games, true);
+        CreateDbl(persons, games, true, true);
     }
 
     public void MultiDouble(int persons, int games) {
         switch (persons) {
         case 5:
-            if(games == 20) {
+            if (games == 4) {
                 Select054();
                 return;
             }
             break;
         case 6:
-            if (games == 24) {
+            switch(games){
+            case 4:
                 Select064();
+                return;
+            case 6:
+                Select066();
                 return;
             }
             break;
         case 7:
-            if (games == 28) {
+            if (games == 4) {
                 Select074();
                 return;
             }
             break;
         case 8:
-            if (games == 32) {
+            switch(games) {
+            case 4:
                 Select084();
+                return;
+            case 7:
+                Select087();
                 return;
             }
             break;
         case 9:
-            if (games == 36) {
+            if (games == 4) {
                 Select094();
                 return;
             }
             break;
         case 10:
-            if (games == 40) {
+            if (games == 4) {
                 Select104();
                 return;
             }
@@ -75,10 +85,10 @@ public partial class Planner {
         log.Error("Not support {p}-player {g}-game case yet!", persons, games);
     }
 
-    public void SampleDouble(int persons, int games) {
-        log.Information("Round Robin double sample: persons {persons}, games {games}", persons, games);
+    public void SingleDouble(int persons, int games) {
+        log.Information("Round Robin doubles: persons {persons}, games {games}", persons, games);
 
-        CreateDbl(persons, games, true, true);
+        CreateDbl(persons, games, true, false);
     }
 
     #endregion
