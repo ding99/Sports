@@ -1,6 +1,6 @@
 ﻿namespace Libs.RoundRobin.Commons;
 
-public partial class Utils {
+public class Utils {
 
     public static List<int> NewMaster(int players, int maxGames) {
         List<int> list = [];
