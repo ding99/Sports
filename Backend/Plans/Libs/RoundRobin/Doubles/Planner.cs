@@ -16,7 +16,7 @@ public partial class Planner {
 
     public void Start(int persons, int games, bool sample, bool multi, bool review) {
         if (review) {
-            ReviewTour(persons);
+            ReviewTour(persons, games);
         } else if (sample) {
             SampleDouble(persons, games);
         } else if (multi) {
