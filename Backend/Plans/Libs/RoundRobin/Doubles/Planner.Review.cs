@@ -5,24 +5,43 @@ namespace Libs.RoundRobin.Doubles;
 
 public partial class Planner {
 
-    public void ReviewTour(int persons) {
+    public void ReviewTour(int persons, int games) {
 
-        Tour? rr;
+        Tour? rr = null;
 
         switch (persons) {
         case 6:
-            rr = GetSample06();
+            switch (games) {
+            case 6:
+                rr = GetSample0606();
+                break;
+            }
+            break;
+        case 8:
+            switch (games) {
+            case 4:
+                rr = GetSample0804();
+                break;
+            }
             break;
         case 10:
-            rr = GetSample10();
+            switch (games) {
+            case 4:
+                rr = GetSample104();
+                break;
+            case 6:
+                rr = GetSample106();
+                break;
+            }
             break;
-        default:
-            log.Information($"UnSupported players number {persons}!");
-            return;
         }
 
-        log.Information(DTour(rr, $"Sample{persons}"));
-        log.Information(DPlayers(STour(rr)));
+        if (rr != null) {
+            log.Information(DTour(rr, $"Sample{persons}"));
+            log.Information(DPlayers(STour(rr)));
+        } else {
+            log.Error("Not found reviewed data for {p}-player, {g}-game!", persons, games);
+        }
     }
 
 
@@ -107,7 +126,34 @@ public partial class Planner {
 
     #region data
 
-    private static Tour GetSample10() {
+    // 20240818 FMS B, 10-player 4-game
+    private static Tour GetSample104() {
+        return new Tour(new([
+            new(new([
+                new(new([2, 4]), new([7, 6])),
+                new(new([8, 5]), new([3, 0]))
+            ])),
+            new(new([
+                new(new([1, 9]), new([2, 6])),
+                new(new([3, 5]), new([7, 4]))
+            ])),
+            new(new([
+                new(new([0, 9]), new([1, 8])),
+                new(new([6, 5]), new([2, 7]))
+            ])),
+            new(new([
+                new(new([1, 4]), new([3, 0])),
+                new(new([8, 9]), new([5, 7]))
+            ])),
+            new(new([
+                new(new([6, 8]), new([1, 3])),
+                new(new([2, 9]), new([4, 0]))
+            ]))
+        ]));
+    }
+
+    // 10-player 6-game
+    private static Tour GetSample106() {
         return new Tour(new([
             new(new([
                 new(new([0, 6]), new([5, 8])),
@@ -143,8 +189,30 @@ public partial class Planner {
         ]));
     }
 
-    // downloaded 6 Player Doubles Round Robin
-    private static Tour GetSample06() {
+    // 20240818 FMS C, 8-player 4-game
+    private static Tour GetSample0804() {
+        return new Tour(new([
+            new(new([
+                new(new([7, 0]), new([5, 2])),
+                new(new([3, 6]), new([1, 4]))
+            ])),
+            new(new([
+                new(new([5, 3]), new([2, 6])),
+                new(new([0, 1]), new([7, 4]))
+            ])),
+            new(new([
+                new(new([2, 7]), new([6, 4])),
+                new(new([5, 0]), new([3, 1]))
+            ])),
+            new(new([
+                new(new([7, 3]), new([5, 4])),
+                new(new([2, 0]), new([1, 6]))
+            ]))
+        ]));
+    }
+
+    // downloaded 6-player 6-game
+    private static Tour GetSample0606() {
         return new Tour(new([
             new(new([
                 new(new([0, 5]), new([1, 3]))
