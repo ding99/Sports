@@ -2,7 +2,7 @@
   "profiles": {
     "PlanMix": {
       "commandName": "Project",
-      "commandLineArgs": "6 5 30"
+      "commandLineArgs": "10 10 50"
     }
   }
 }
