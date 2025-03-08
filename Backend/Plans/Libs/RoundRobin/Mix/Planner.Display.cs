@@ -8,7 +8,7 @@ namespace Libs.RoundRobin.Mix;
 public partial class Planner {
 
     private static string DTour(Tour tour, string name) {
-        StringBuilder b = new($"Tour {name} (Rounds {tour.Rounds.Count})");
+        StringBuilder b = new($"== Tour {name} (Rounds {tour.Rounds.Count})");
         b.AppendLine();
         b.Append(string.Join(
             Environment.NewLine,

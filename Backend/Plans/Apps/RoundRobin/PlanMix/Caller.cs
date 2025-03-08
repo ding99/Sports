@@ -21,11 +21,23 @@ public class Caller {
             description: "Input the number of total games."
             );
 
+        var review = new Option<bool>(
+            ["-r", "--review"],
+            () => false,
+            "Review an existing sample tournament."
+            );
+
         var root = new RootCommand("Plan a mixed double round robin");
         root.AddArgument(men);
         root.AddArgument(women);
         root.AddArgument(games);
-        root.SetHandler((m, w, g) => new Planner().StartMixed(m, w, g), men, women, games);
+        root.AddOption(review);
+
+        root.SetHandler(
+            (m, w, g, r) => new Planner().StartMixed(m, w, g, r),
+            men, women, games, review
+            );
+
         //root.SetHandler((m, w, g) => new Planner().Select66(), men, women, games);
         //root.SetHandler((m, w, g) => new Planner().Select65(), men, women, games);
 

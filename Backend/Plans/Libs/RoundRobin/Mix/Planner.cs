@@ -13,11 +13,17 @@ public partial class Planner {
             .CreateLogger();
     }
 
-    public void StartMixed(int men, int women, int games) {
+    public void StartMixed(int men, int women, int games, bool review) {
         log.Information("Round Robin mix double: men {men}, women {women}, games {games}", men, women, games);
-        
-        CreateMix(men, women, games, true);
+
+        if (review) {
+            ReviewTour(men, women, games);
+        } else {
+            CreateMix(men, women, games, true);
+        }
     }
+
+    #region sub entries
 
     public void Select66() {
         int men = 6, women = 6, games = 36;
@@ -34,5 +40,7 @@ public partial class Planner {
         log.Information("Round Robin mix double: men {men}, women {women}, games {games}. times {times}", men, women, games, times);
         Chose65(men, women, games, times);
     }
+
+    #endregion
 
 }
