@@ -26,16 +26,17 @@ public partial class Planner {
 
     public Result<Overall> Pair(int men, int women, int games) {
 
-        if (games % men > 0 || games % women > 0) {
+        var pairs = games << 1;
+        if (pairs % men > 0 || pairs % women > 0) {
             return Result.Failure<Overall>("Invalid games value.");
         }
 
-        var master = CreateMaster(men, women, games);
+        var master = CreateMaster(men, women, pairs);
         if (master.Men.Count != master.Women.Count) {
             return Result.Failure<Overall>($"The number({master.Men.Count}) of men players must be equal to the number({master.Women.Count}) of women players.");
         }
 
-        var oa = new Overall(men, women, games/men);
+        var oa = new Overall(men, women, pairs/men);
         int count;
 
         try {
@@ -52,7 +53,6 @@ public partial class Planner {
 
                 listM = GetMinOppo(oa, listM, true);
                 listW = GetMinOppo(oa, listW, false);
-                //log.Warning($"({listM.Count()} {listW.Count()})");
 
                 (listM, listW) = GetMinPart(oa, listM, listW);
 

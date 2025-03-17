@@ -27,18 +27,18 @@ public class Overall
         if (min > 0) {
             MaxCt = min / 2;
         }
-        PlayerM = Enumerable.Range(0, men).Select(i => new Player() {
+        PlayerM = [.. Enumerable.Range(0, men).Select(i => new Player() {
             Self = i,
             Partners = new int[women],
             OppoSame = new int[men],
             OppoDiff = new int[women]
-        }).ToArray();
-        PlayerW = Enumerable.Range(0, women).Select(i => new Player() {
+        })];
+        PlayerW = [.. Enumerable.Range(0, women).Select(i => new Player() {
             Self = i,
             Partners = new int[men],
             OppoSame = new int[women],
             OppoDiff = new int[men]
-        }).ToArray();
+        })];
         OrderM = [];
         OrderW = [];
     }
@@ -98,7 +98,7 @@ public class Round
 
     public Round Clone()
     {
-        return new Round { Courts = new(Courts) };
+        return new Round { Courts = [.. Courts] };
     }
 
 }

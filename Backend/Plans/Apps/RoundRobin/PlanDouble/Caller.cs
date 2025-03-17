@@ -7,7 +7,7 @@ namespace Apps.RoundRobin.PlanDouble;
 
 public class Caller {
 
-    public void Start(string[] args) {
+    public static void Start(string[] args) {
 
         var players = new Argument<int>(
             name: "players",
@@ -31,7 +31,7 @@ public class Caller {
         var review = new Option<bool>(
             ["-r", "--review"],
             () => false,
-            "Review an existing tournament."
+            "Review an existing sample tournament."
             );
 
         var root = new RootCommand("Plan a double round robin");

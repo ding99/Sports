@@ -1,1 +1,1 @@
-﻿new Apps.RoundRobin.PlanDouble.Caller().Start(args);
+﻿Apps.RoundRobin.PlanDouble.Caller.Start(args);
