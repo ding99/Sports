@@ -14,6 +14,20 @@ public class Player {
     }
 }
 
+public class PlayerAdv {
+    public int Self { get; set; }
+    public int Played { get; set; }
+    public Dictionary<int, int> Partners { get; set; }
+    public Dictionary<int, int> OppoSame { get; set; }
+    public Dictionary<int, int> OppoDiff { get; set; }
+
+    public PlayerAdv() {
+        Partners = [];
+        OppoSame = [];
+        OppoDiff = [];
+    }
+}
+
 public class Order(int index, int person) {
     public int Index { get; set; } = index;
     public int Person { get; set; } = person;

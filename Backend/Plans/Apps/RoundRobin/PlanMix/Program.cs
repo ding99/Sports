@@ -1,1 +1,1 @@
-﻿new Apps.RoundRobin.PlanMix.Caller().Start(args);
+﻿Apps.RoundRobin.PlanMix.Caller.Start(args);
