@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Collections.Generic;
 
 using Libs.RoundRobin.Mix.Models;
 
@@ -73,20 +72,45 @@ public partial class Planner {
                     man.Partners[t.Key] = t.Count();
                 });
 
-            //man.Partners.ForEach(part => {
-            //    if (took.Any(p => p.Key == part.Person)) {
-            //        part.Count = took.First(p => p.Key == part.Person).Count();
-            //    }
-            //});
+            //TODO Oppo Same
+            //TODO Oppo Diff
+
+        });
+
+        women.ForEach(woman => {
+            woman.Partners = men.ToDictionary(w => w.Self, w => 0);
+            woman.OppoSame = women.ToDictionary(w => w.Self, w => 0);
+            woman.OppoDiff = men.ToDictionary(w => w.Self, w => 0);
+
+            teams
+                .Where(t => t.Item2 == woman.Self)
+                .GroupBy(t => t.Item1)
+                .ToList()
+                .ForEach(t => {
+                    woman.Partners[t.Key] = t.Count();
+                });
+
+            //TODO Oppo Same
+            //TODO Oppo Diff
+
         });
 
         StringBuilder b = new();
-        b.AppendLine("Players");
+
+        b.AppendLine("Men Players");
         men.ForEach(man => {
             b.AppendLine($"-- {man.Self + 1} ({man.Played})");
             b.AppendLine($"Partners:  {string.Join(',', man.Partners.Select(s => $"{s.Key + 1}-{s.Value}"))} ({man.Partners.Sum(p => p.Value)})");
             b.AppendLine($"Opponents: Men {string.Join(',', man.OppoSame.Select(s => $"{s.Key + 1}-{s.Value}"))} ({man.OppoSame.Sum(p => p.Value)}); Women {string.Join(',', man.OppoDiff.Select(s => $"{s.Key + 1}-{s.Value}"))} ({man.OppoDiff.Sum(p => p.Value)})");
         });
+
+        b.AppendLine("Women Players");
+        women.ForEach(woman => {
+            b.AppendLine($"-- {woman.Self + 1} ({woman.Played})");
+            b.AppendLine($"Partners:  {string.Join(',', woman.Partners.Select(s => $"{s.Key + 1}-{s.Value}"))} ({woman.Partners.Sum(p => p.Value)})");
+            b.AppendLine($"Opponents: Men {string.Join(',', woman.OppoSame.Select(s => $"{s.Key + 1}-{s.Value}"))} ({woman.OppoSame.Sum(p => p.Value)}); Women {string.Join(',', woman.OppoDiff.Select(s => $"{s.Key + 1}-{s.Value}"))} ({woman.OppoDiff.Sum(p => p.Value)})");
+        });
+
         return b.ToString();
     }
 
