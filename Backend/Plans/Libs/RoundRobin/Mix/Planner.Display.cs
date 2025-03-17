@@ -138,18 +138,19 @@ public partial class Planner {
 
         StringBuilder b = new();
 
-        b.AppendLine("Men Players");
+        b.AppendLine();
+        b.AppendLine("[ Men Players ]");
         men.ForEach(man => {
             b.AppendLine($"-- {man.Self + 1} ({man.Played})");
             b.AppendLine($"Partners:  {string.Join(',', man.Partners.Select(s => $"{s.Key + 1}-{s.Value}"))} ({man.Partners.Sum(p => p.Value)})");
             b.AppendLine($"Opponents: Men {string.Join(',', man.OppoSame.Select(s => $"{s.Key + 1}-{s.Value}"))} ({man.OppoSame.Sum(p => p.Value)}); Women {string.Join(',', man.OppoDiff.Select(s => $"{s.Key + 1}-{s.Value}"))} ({man.OppoDiff.Sum(p => p.Value)})");
         });
 
-        b.AppendLine("Women Players");
+        b.AppendLine("[ Women Players ]");
         women.ForEach(woman => {
             b.AppendLine($"-- {woman.Self + 1} ({woman.Played})");
             b.AppendLine($"Partners:  {string.Join(',', woman.Partners.Select(s => $"{s.Key + 1}-{s.Value}"))} ({woman.Partners.Sum(p => p.Value)})");
-            b.AppendLine($"Opponents: Men {string.Join(',', woman.OppoSame.Select(s => $"{s.Key + 1}-{s.Value}"))} ({woman.OppoSame.Sum(p => p.Value)}); Women {string.Join(',', woman.OppoDiff.Select(s => $"{s.Key + 1}-{s.Value}"))} ({woman.OppoDiff.Sum(p => p.Value)})");
+            b.AppendLine($"Opponents: Men {string.Join(',', woman.OppoDiff.Select(s => $"{s.Key + 1}-{s.Value}"))} ({woman.OppoDiff.Sum(p => p.Value)}); Women {string.Join(',', woman.OppoSame.Select(s => $"{s.Key + 1}-{s.Value}"))} ({woman.OppoSame.Sum(p => p.Value)})");
         });
 
         return b.ToString();
