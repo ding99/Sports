@@ -32,12 +32,14 @@ public partial class Planner {
         if (valid.Count > 0) {
             b.AppendLine(string.Join(Environment.NewLine, valid));
         } else {
-            b.Append(DMixMPlayers(tour));
+            b.Append(GetCounts(tour));
         }
         return b.ToString();
     }
 
-    private static string DMixMPlayers(Tour tour) {
+    private static string GetCounts(Tour tour) {
+
+        #region calculate
 
         var men = tour.Rounds
             .SelectMany(r => r.Courts.SelectMany(c => new int[] { c.Team1.Man, c.Team2.Man }))
@@ -55,8 +57,11 @@ public partial class Planner {
             .Select(c => new PlayerAdv() { Self = c.Key, Played = c.Count() })
             .ToList();
 
-        var teams = tour.Rounds
-            .SelectMany(r => r.Courts.SelectMany(c => new (int, int)[] { (c.Team1.Man, c.Team1.Woman), (c.Team2.Man, c.Team2.Woman) }))
+        var courts = tour.Rounds
+            .SelectMany(r => r.Courts)
+            .ToList();
+        var teams = courts
+            .SelectMany(c => new Team[] { c.Team1, c.Team2 })
             .ToList();
 
         men.ForEach(man => {
@@ -65,16 +70,32 @@ public partial class Planner {
             man.OppoDiff = women.ToDictionary(w => w.Self, w => 0);
 
             teams
-                .Where(t => t.Item1 == man.Self)
-                .GroupBy(t => t.Item2)
-                .ToList()
-                .ForEach(t => {
-                    man.Partners[t.Key] = t.Count();
-                });
+            .Where (t => t.Man == man.Self)
+            .GroupBy (t => t.Woman)
+            .ToList()
+            .ForEach (t => man.Partners[t.Key] += t.Count());
 
-            //TODO Oppo Same
-            //TODO Oppo Diff
+            courts
+            .Where (c => c.Team1.Man == man.Self)
+            .GroupBy (c => c.Team2.Man)
+            .ToList()
+            .ForEach (c => man.OppoSame[c.Key] += c.Count());
+            courts
+            .Where(c => c.Team2.Man == man.Self)
+            .GroupBy(c => c.Team1.Man)
+            .ToList()
+            .ForEach(c => man.OppoSame[c.Key] += c.Count());
 
+            courts
+            .Where(c => c.Team1.Man == man.Self)
+            .GroupBy(c => c.Team2.Woman)
+            .ToList()
+            .ForEach(c => man.OppoDiff[c.Key] += c.Count());
+            courts
+            .Where(c => c.Team2.Man == man.Self)
+            .GroupBy(c => c.Team1.Woman)
+            .ToList()
+            .ForEach(c => man.OppoDiff[c.Key] += c.Count());
         });
 
         women.ForEach(woman => {
@@ -83,17 +104,37 @@ public partial class Planner {
             woman.OppoDiff = men.ToDictionary(w => w.Self, w => 0);
 
             teams
-                .Where(t => t.Item2 == woman.Self)
-                .GroupBy(t => t.Item1)
-                .ToList()
-                .ForEach(t => {
-                    woman.Partners[t.Key] = t.Count();
-                });
+            .Where(t => t.Woman == woman.Self)
+            .GroupBy(t => t.Man)
+            .ToList()
+            .ForEach(t => woman.Partners[t.Key] += t.Count());
 
-            //TODO Oppo Same
-            //TODO Oppo Diff
+            courts
+            .Where(c => c.Team1.Woman == woman.Self)
+            .GroupBy(c => c.Team2.Woman)
+            .ToList()
+            .ForEach(c => woman.OppoSame[c.Key] += c.Count());
+            courts
+            .Where(c => c.Team2.Woman == woman.Self)
+            .GroupBy(c => c.Team1.Woman)
+            .ToList()
+            .ForEach(c => woman.OppoSame[c.Key] += c.Count());
 
+            courts
+            .Where(c => c.Team1.Woman == woman.Self)
+            .GroupBy(c => c.Team2.Man)
+            .ToList()
+            .ForEach(c => woman.OppoDiff[c.Key] += c.Count());
+            courts
+            .Where(c => c.Team2.Woman == woman.Self)
+            .GroupBy(c => c.Team1.Man)
+            .ToList()
+            .ForEach(c => woman.OppoDiff[c.Key] += c.Count());
         });
+
+        #endregion
+
+        #region display
 
         StringBuilder b = new();
 
@@ -112,6 +153,8 @@ public partial class Planner {
         });
 
         return b.ToString();
+
+        #endregion
     }
 
     private static string DPlayers(Player[] players) {
