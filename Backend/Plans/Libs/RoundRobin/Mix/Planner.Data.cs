@@ -1,4 +1,5 @@
-﻿using Libs.RoundRobin.Commons;
+﻿using CSharpFunctionalExtensions;
+using Libs.RoundRobin.Commons;
 using Libs.RoundRobin.Mix.Models;
 
 
@@ -128,5 +129,52 @@ public partial class Planner {
 
     //    return list;
     //}
+
+    public static List<string> ValidateMix(Tour tour) {
+        List<string> errors = [];
+
+        for (int i = 0; i < tour.Rounds.Count; i++) {
+            var round = tour.Rounds[i];
+
+            //No player
+            for (int j = 0; j < round.Courts.Count; j++) {
+                var court = round.Courts[j];
+                if (court.Team1.Man < 0) {
+                    errors.Add($"Not found man player in Round {i + 1}, Court {j + 1}, Team 1");
+                }
+                if (court.Team1.Woman < 0) {
+                    errors.Add($"Not found woman player in Round {i + 1}, Court {j + 1}, Team 1");
+                }
+                if (court.Team2.Man < 0) {
+                    errors.Add($"Not found man player in Round {i + 1}, Court {j + 1}, Team 2");
+                }
+                if (court.Team2.Woman < 0) {
+                    errors.Add($"Not found woman player in Round {i + 1}, Court {j + 1}, Team 2");
+                }
+            }
+            
+            //duplicated Men
+            var dupM = round.Courts
+                .SelectMany(c => new int[] { c.Team1.Man, c.Team2.Man })
+                .Where(c => c > 0)
+                .GroupBy(c => c)
+                .Where(c => c.Count() > 1);
+            if (dupM.Any()) {
+                errors.Add($"Found duplicated Man players {string.Join(',', dupM.Select(c => c.Key))} at Round {i + 1}");
+            }
+
+            //duplicated Women
+            var dupW = round.Courts
+                .SelectMany(c => new int[] { c.Team1.Woman, c.Team2.Woman })
+                .Where(c => c > 0)
+                .GroupBy(c => c)
+                .Where(c => c.Count() > 1);
+            if (dupW.Any()) {
+                errors.Add($"Found duplicated Man players {string.Join(',', dupW.Select(c => c.Key))} at Round {i + 1}");
+            }
+        }
+
+        return errors;
+    }
 
 }
